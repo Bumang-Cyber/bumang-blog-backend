@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  users       User[]        // User와 연결
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role        @relation(fields: [roleId], references: [id], onDelete: Cascade) // @relation은 관계를 나타내주는 가상필드
+  permission   Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade) // @relation은 관계를 나타내주는 가상필드
+
+  @@id([roleId, permissionId]) // 복합 기본키 설정 (다대다 관계)
+}
+
+model User {
+  id        String @id @default(uuid())
+  email     String @unique
+  password  String
+  roleId    String
+  role      Role    @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
