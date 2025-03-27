@@ -1,26 +1,48 @@
 import { Injectable } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { UserEntity } from './entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UpdateUserResponseDto } from './dto/user-response.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 // import { CreateUserDto } from './dto/create-user.dto';
 // import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  // create(createUserDto: CreateUserDto) {
-  //   return 'This action adds a new user';
-  // }
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
+  ) {}
 
-  findAll() {
-    return `This action returns all users`;
+  // 전체 유저 조회
+  async findAll(): Promise<UserEntity[]> {
+    return this.userRepo.find({
+      relations: ['posts', 'comments'], // 옵션
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  // 특정 유저 조회
+  async findOne(id: number): Promise<UserEntity> {
+    return this.userRepo.findOne({
+      where: { id },
+      relations: ['posts', 'comments'],
+    });
   }
 
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
+  // 유저 생성
+  async create(dto: CreateUserDto): Promise<UserEntity> {
+    const user = this.userRepo.create(dto);
+    return this.userRepo.save(user);
+  }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  // 유저 수정
+  async update(id: number, dto: UpdateUserResponseDto): Promise<UserEntity> {
+    await this.userRepo.update(id, dto);
+    return this.findOne(id);
+  }
+
+  // 유저 삭제
+  async remove(id: number): Promise<void> {
+    await this.userRepo.delete(id);
   }
 }
