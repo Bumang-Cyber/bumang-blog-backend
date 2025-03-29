@@ -6,8 +6,8 @@ import {
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UpdateUserResponseDto } from './dto/user-response.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +31,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`해당 ID의 유저가 존재하지 않습니다.`); // 404 에러를 던져줌
+      throw new NotFoundException(`User with this ID does not exist`); // 404 에러를 던져줌
     }
 
     return user;
@@ -58,18 +58,47 @@ export class UsersService {
   }
 
   // 유저 수정
-  async updateUser(
-    id: number,
-    dto: UpdateUserResponseDto,
-  ): Promise<UserEntity> {
-    await this.userRepo.update(id, dto);
-    return this.userRepo.findOne({
-      where: { id },
-    });
+  async updateUser(id: number, dto: UpdateUserDto): Promise<UserEntity> {
+    const { email, nickname } = dto;
+    if (dto.email) {
+      const existingEmail = await this.userRepo.findOne({ where: { email } });
+      if (existingEmail) {
+        throw new ConflictException('this email has already been used'); // 409 에러를 던져줌
+      }
+    }
+
+    if (dto.nickname) {
+      const existingNickname = await this.userRepo.findOne({
+        where: { nickname },
+      });
+      if (existingNickname) {
+        throw new ConflictException('this nickname has already been used');
+      }
+    }
+
+    const result = await this.userRepo.update(id, dto);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const updated = await this.userRepo.findOne({ where: { id } });
+
+    if (!updated) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return updated;
   }
 
   // 유저 삭제
-  async removeUser(id: number): Promise<void> {
-    await this.userRepo.delete(id);
+  async removeUser(id: number): Promise<void | boolean> {
+    const user = await this.userRepo.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    await this.userRepo.remove(user); // 따로 응답을 내려주지 않음
   }
 }
