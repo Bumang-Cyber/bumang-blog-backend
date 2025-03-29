@@ -23,8 +23,8 @@ export class UsersService {
     });
   }
 
-  // 특정 유저 조회
-  async findOneUser(id: number): Promise<UserEntity> {
+  // 특정 유저 조회 (아이디로)
+  async findOneUserById(id: number): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
       where: { id },
       relations: ['posts', 'comments'],
@@ -32,6 +32,34 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException(`User with this ID does not exist`); // 404 에러를 던져줌
+    }
+
+    return user;
+  }
+
+  // 특정 유저 조회 (이메일로)
+  async findOneUserByEmail(email: string): Promise<UserEntity> {
+    const user = await this.userRepo.findOne({
+      where: { email },
+      relations: ['posts', 'comments'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with this Email does not exist`); // 404 에러를 던져줌
+    }
+
+    return user;
+  }
+
+  // 특정 유저 조회 (닉네임으로)
+  async findOneUserByNickname(nickname: string): Promise<UserEntity> {
+    const user = await this.userRepo.findOne({
+      where: { nickname },
+      relations: ['posts', 'comments'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with this Email does not exist`); // 404 에러를 던져줌
     }
 
     return user;

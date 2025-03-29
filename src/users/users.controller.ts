@@ -24,9 +24,10 @@ export class UsersController {
     return await this.usersService.findAllUser();
   }
 
+  // 유저 한 명 찾기
   @Get(':id') // 200 OK
-  async findOneUser(@Param('id', ParseIntPipe) id: number) {
-    const user = await this.usersService.findOneUser(id);
+  async findOneUserById(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.usersService.findOneUserById(id);
 
     return plainToInstance(UserEntity, user);
   }
