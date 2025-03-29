@@ -51,21 +51,17 @@ export class AuthService {
 
     const user = await this.usersService.findOneUserByEmail(email);
     if (!user) {
-      throw new UnauthorizedException(
-        '이메일 혹은 비밀번호가 일치하지 않습니다.',
-      );
+      throw new UnauthorizedException('Invalid Email or Password');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException(
-        '이메일 혹은 비밀번호가 일치하지 않습니다.',
-      );
+      throw new UnauthorizedException('Invalid Email or Password');
     }
 
-    // 토큰 생성
-    const accessToken = this.generateAccessToken(user.id);
-    const refreshToken = this.generateRefreshToken(user.id);
+    // 토큰 생성 (userId와 role 기록)
+    const accessToken = this.generateAccessToken(user.id, user.role);
+    const refreshToken = this.generateRefreshToken(user.id, user.role);
 
     // Refresh Token DB에 저장
     await this.usersService.saveRefreshToken(user.id, refreshToken);
@@ -80,12 +76,12 @@ export class AuthService {
   async refreshTokens(userId: number) {
     const user = await this.usersService.findOneUserById(userId);
     if (!user || !user.refreshToken) {
-      throw new UnauthorizedException('Refresh token이 유효하지 않습니다.');
+      throw new UnauthorizedException('Invalid Refresh token');
     }
 
     // 토큰 재발급
-    const accessToken = this.generateAccessToken(userId);
-    const refreshToken = this.generateRefreshToken(userId);
+    const accessToken = this.generateAccessToken(userId, RolesEnum.ADMIN);
+    const refreshToken = this.generateRefreshToken(userId, RolesEnum.ADMIN);
 
     // DB에 refreshToken 갱신
     await this.usersService.saveRefreshToken(userId, refreshToken);
@@ -99,13 +95,16 @@ export class AuthService {
   // 🔴 로그아웃
   async logout(userId: number) {
     await this.usersService.removeRefreshToken(userId);
-    return { message: '성공적으로 로그아웃되었습니다.' };
+    return { message: 'logout successfully completed' };
   }
 
   // 🔑 Access Token 생성
-  private generateAccessToken(userId: number): string {
+  private generateAccessToken(userId: number, role: RolesEnum): string {
     return this.jwtService.sign(
-      { sub: userId },
+      {
+        sub: userId,
+        role,
+      },
       {
         secret: process.env.JWT_SECRET,
         expiresIn: process.env.JWT_EXPIRATION,
@@ -114,9 +113,12 @@ export class AuthService {
   }
 
   // 🔑 Refresh Token 생성
-  private generateRefreshToken(userId: number): string {
+  private generateRefreshToken(userId: number, role: RolesEnum): string {
     return this.jwtService.sign(
-      { sub: userId },
+      {
+        sub: userId,
+        role,
+      },
       {
         secret: process.env.JWT_REFRESH_SECRET,
         expiresIn: process.env.JWT_REFRESH_EXPIRATION,

@@ -129,4 +129,26 @@ export class UsersService {
 
     await this.userRepo.remove(user); // 따로 응답을 내려주지 않음
   }
+
+  // 리프레시 토큰 저장
+  async saveRefreshToken(id: number, refreshToken: string) {
+    const result = await this.userRepo.update(id, { refreshToken });
+
+    if (result.affected === 0) {
+      throw new NotFoundException('User Not Found');
+    }
+
+    // 뭘 리턴해줘야 되나??
+  }
+
+  // 리프레시 토큰 제거
+  async removeRefreshToken(id: number) {
+    const result = await this.userRepo.update(id, { refreshToken: null });
+
+    if (result.affected === 0) {
+      throw new NotFoundException('User Not Found');
+    }
+
+    // 뭘 리턴해줘야 되나??
+  }
 }

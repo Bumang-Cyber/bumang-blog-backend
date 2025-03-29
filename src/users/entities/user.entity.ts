@@ -49,4 +49,7 @@ export class UserEntity {
   // 코멘트
   @OneToMany(() => CommentEntity, (comment) => comment.author)
   comments: CommentEntity[];
+
+  @Column({ nullable: true })
+  refreshToken: string;
 }
