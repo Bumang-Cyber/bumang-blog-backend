@@ -9,6 +9,7 @@ import {
 import { RolesEnum } from '../const/roles.const';
 import { PostEntity } from 'src/posts/entities/post.entity';
 import { CommentEntity } from 'src/comments/entities/comment.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class UserEntity {
@@ -25,6 +26,7 @@ export class UserEntity {
   email: string;
 
   @Column()
+  @Exclude() // 응답에서 제외시켜주는 데코레이터.
   password: string;
 
   @Column({
