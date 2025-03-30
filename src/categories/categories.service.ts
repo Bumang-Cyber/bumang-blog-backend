@@ -19,6 +19,7 @@ export class CategoriesService {
   async findAllCategoryInRaw(sortType: 'tree' | 'raw' = 'tree') {
     const categories = await this.categoryRepo.find({
       relations: ['parent', 'children'],
+      order: { order: 'ASC' },
     });
 
     return categories;

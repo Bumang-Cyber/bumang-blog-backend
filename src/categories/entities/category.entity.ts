@@ -9,9 +9,11 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
+@Unique(['parent', 'order']) // 💡 복합 유니크 제약 조건
 @Entity()
 export class CategoryEntity {
   @PrimaryGeneratedColumn()
