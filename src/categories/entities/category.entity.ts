@@ -25,7 +25,6 @@ export class CategoryEntity {
   label: string;
 
   @Column({
-    unique: true,
     nullable: false,
   })
   order: number;

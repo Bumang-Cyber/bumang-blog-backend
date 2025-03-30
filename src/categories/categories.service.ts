@@ -43,6 +43,7 @@ export class CategoriesService {
 
       // parent가 없으면
       if (!parent) {
+        console.log(parentId, 'parentId', 3);
         throw new NotFoundException(`Parent category not found`); // 404 에러를 던져줌
       }
     }
@@ -51,7 +52,7 @@ export class CategoriesService {
     if (order === null) {
       // 오더가 없다면
       const maxOrderCategory = await this.categoryRepo.findOne({
-        where: { parent },
+        where: parent ? { parent: { id: parent.id } } : { parent: null },
         order: { order: 'DESC' },
       });
 
@@ -72,6 +73,7 @@ export class CategoriesService {
       order: finalOrder,
       parent,
     });
+
     return this.categoryRepo.save(category);
   }
 
