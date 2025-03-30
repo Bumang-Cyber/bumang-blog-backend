@@ -21,15 +21,15 @@ export class AuthService {
     const { email, nickname, password } = dto;
 
     // 이메일 조회
-    const existingEmail = await this.usersService.findOneUserByEmail(email);
-    if (existingEmail) {
+    const isEmailAvailable = await this.usersService.isEmailAvailable(email);
+    if (!isEmailAvailable) {
       throw new ConflictException('User with this Email already exists');
     }
 
     // 닉네임 조회
-    const existingNickname =
-      await this.usersService.findOneUserByNickname(nickname);
-    if (existingNickname) {
+    const isNicknameAvailable =
+      await this.usersService.isNicknameAvailable(nickname);
+    if (!isNicknameAvailable) {
       throw new ConflictException('User with this Nickname already exists');
     }
 
@@ -72,16 +72,16 @@ export class AuthService {
     };
   }
 
-  // 🟡 Refresh Token 재발급
-  async refreshTokens(userId: number) {
+  // 🟡 access Token 재발급
+  async renewAccessToken(userId: number) {
     const user = await this.usersService.findOneUserById(userId);
-    if (!user || !user.refreshToken) {
+    if (!user.refreshToken) {
       throw new UnauthorizedException('Invalid Refresh token');
     }
 
     // 토큰 재발급
-    const accessToken = this.generateAccessToken(userId, RolesEnum.ADMIN);
-    const refreshToken = this.generateRefreshToken(userId, RolesEnum.ADMIN);
+    const accessToken = this.generateAccessToken(userId, user.role);
+    const refreshToken = this.generateRefreshToken(userId, user.role);
 
     // DB에 refreshToken 갱신
     await this.usersService.saveRefreshToken(userId, refreshToken);

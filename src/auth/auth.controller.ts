@@ -22,19 +22,19 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-  // 🟡 Refresh Token 재발급
-  @UseGuards(JwtRefreshGuard)
-  @Post('refresh')
-  async renewRefresh(@Req() req: RequestWithUser) {
-    const user = req.user;
-    return this.authService.refreshTokens(user.userId);
-  }
-
   // 🔴 로그아웃 (RefreshToken 무효화)
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: RequestWithUser) {
     const user = req.user;
     return this.authService.logout(user.userId);
+  }
+
+  // 🟡 access Token 재발급
+  @UseGuards(JwtRefreshGuard)
+  @Post('refresh')
+  async renewAccessToken(@Req() req: RequestWithUser) {
+    const user = req.user;
+    return this.authService.renewAccessToken(user.userId);
   }
 }

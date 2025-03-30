@@ -7,6 +7,7 @@ import { PostsModule } from './posts/posts.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CommentsModule } from './comments/comments.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AuthModule } from './auth/auth.module';
       // 개발환경에선 false
       synchronize: true,
     }),
+    ConfigModule.forRoot({ isGlobal: true }),
     UsersModule,
     PostsModule,
     CategoriesModule,

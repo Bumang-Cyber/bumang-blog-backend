@@ -65,6 +65,24 @@ export class UsersService {
     return user;
   }
 
+  // 사용가능한 이메일인지 여부
+  async isEmailAvailable(email: string): Promise<boolean> {
+    const user = await this.userRepo.findOne({
+      where: { email },
+    });
+
+    return !user;
+  }
+
+  // 사용가능한 이메일인지 여부
+  async isNicknameAvailable(nickname: string): Promise<boolean> {
+    const user = await this.userRepo.findOne({
+      where: { nickname },
+    });
+
+    return !user;
+  }
+
   // 유저 생성
   async createUser(dto: CreateUserDto): Promise<UserEntity> {
     const { email, nickname } = dto;
@@ -139,6 +157,7 @@ export class UsersService {
     }
 
     // 뭘 리턴해줘야 되나??
+    console.log('refreshToken saved');
   }
 
   // 리프레시 토큰 제거

@@ -11,11 +11,11 @@ export class JwtRefreshStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.JWT_REFRESH_SECRET,
-      passReqToCallback: true,
+      // passReqToCallback: true,
     });
   }
 
   async validate(payload: any) {
-    return { userId: payload.sub };
+    return { userId: payload.sub, role: payload.role };
   }
 }
