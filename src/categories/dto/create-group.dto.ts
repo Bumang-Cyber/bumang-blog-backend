@@ -7,7 +7,7 @@ import {
   IsOptional,
 } from 'class-validator';
 
-export class CreateCategoryDto {
+export class CreateGroupDto {
   @IsString()
   @IsNotEmpty()
   label: string;
@@ -16,8 +16,4 @@ export class CreateCategoryDto {
   @IsNumber()
   @Min(0)
   order: number | null;
-
-  @IsOptional()
-  @IsNumber()
-  groupId: number | null;
 }
