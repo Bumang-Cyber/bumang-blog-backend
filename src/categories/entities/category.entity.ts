@@ -39,7 +39,10 @@ export class CategoryEntity {
   @JoinColumn()
   group: GroupEntity;
 
-  @ManyToMany(() => PostEntity, (post) => post.categories)
+  @ManyToMany(() => PostEntity, (post) => post.categories, {
+    nullable: true,
+    onDelete: 'SET NULL', // 카테고리 삭제 시 연결된 Post를 null로.
+  })
   @JoinTable()
   posts: PostEntity[];
 }

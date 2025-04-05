@@ -1,18 +1,18 @@
 import {
   ConflictException,
-  // ConflictException,
   Injectable,
   NotFoundException,
-  // NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CategoryEntity } from './entities/category.entity';
 import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { CategoryEntity } from './entities/category.entity';
 import { GroupEntity } from './entities/group.entity';
+
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
-// import { CreateCategoryDto } from './dto/create-category.dto';
-// import { UpdateCategoryDto } from './dto/update-category.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -24,6 +24,9 @@ export class CategoriesService {
     private readonly groupRepo: Repository<GroupEntity>,
   ) {}
 
+  /**
+   * @GROUP
+   */
   // 1. 그룹 조회
   async findAllGroupRaw() {
     const groups = await this.groupRepo.find({
@@ -38,45 +41,118 @@ export class CategoriesService {
   async creeateOneGroup(dto: CreateGroupDto): Promise<GroupEntity> {
     const { label, order } = dto;
 
+    console.log(label, order, 1);
     const existingLabel = await this.groupRepo.findOne({
       where: { label },
     });
 
+    console.log(existingLabel, 2);
     if (existingLabel) {
       throw new ConflictException('Group label is already in use');
     }
 
     let finalOrder: number = order;
+    console.log(finalOrder, 3);
     if (typeof order === 'number') {
+      console.log(finalOrder, 3.5);
       const existingOrder = await this.groupRepo.findOne({
         where: { order: finalOrder },
       });
+      console.log(existingOrder, 4);
 
       if (existingOrder) {
         throw new ConflictException('Group Order is already in use');
       }
     } else {
       // order가 null인 경우
-      const maxOrderGroup = await this.groupRepo.findOne({
+      const maxOrderGroup = await this.groupRepo.find({
         order: { order: 'DESC' },
+        take: 1,
       });
 
       // 계층에서 가장 후순위 오더로 지정
-      finalOrder = maxOrderGroup ? maxOrderGroup.order + 1 : 1;
+      finalOrder = maxOrderGroup ? maxOrderGroup[0].order + 1 : 1;
     }
+    console.log(finalOrder, 6);
 
     const group = this.groupRepo.create({
       label,
       order: finalOrder,
     });
+    console.log(group, 7);
 
     return this.groupRepo.save(group);
   }
 
   // 3. 그룹 수정
+  async updateOneGroup(id: number, dto: UpdateGroupDto) {
+    const { label, order } = dto;
+    console.log(label, order);
+
+    // 아이디로 조회
+    const existingOne = await this.groupRepo.findOne({
+      where: { id },
+    });
+
+    // 아이디가 존재하지 않으면 에러처리
+    if (!existingOne) {
+      throw new NotFoundException('Group not found');
+    }
+
+    // 찾으면 newOne에 할당.
+    const newOne = existingOne;
+    if (typeof label === 'string') {
+      const existingLabel = await this.groupRepo.findOne({
+        where: { label },
+      });
+
+      if (existingLabel && existingLabel.id !== id) {
+        throw new ConflictException('Label already in use');
+      }
+
+      newOne.label = label;
+    }
+
+    if (typeof order === 'number') {
+      const existingdOrder = await this.groupRepo.findOne({
+        where: { order },
+      });
+
+      if (existingdOrder && existingdOrder.id !== id) {
+        throw new ConflictException('Order already in use');
+      }
+
+      newOne.order = order;
+    }
+
+    const res = await this.groupRepo.save(newOne);
+
+    return res;
+  }
 
   // 4. 그룹 삭제
+  async deleteOneGroup(id: number) {
+    const group = await this.groupRepo.findOne({
+      where: { id },
+      relations: ['categories'],
+    });
 
+    if (!group) {
+      throw new NotFoundException(`Group with ID ${id} not found`);
+    }
+
+    if (group.categories?.length > 0) {
+      throw new ConflictException(
+        'Cannot delete group: categories exist under this group.',
+      );
+    }
+
+    await this.groupRepo.remove(group); // 따로 응답을 내려주지 않음 (204)
+  }
+
+  /**
+   * @CATEGORIES
+   */
   // 1. 전체 카테고리 조회 (JSON 계층구조 표현 | raw)
   async findAllCategoryRaw() {
     const categories = await this.categoryRepo.find({
@@ -145,63 +221,72 @@ export class CategoriesService {
   }
 
   // 3. 카테고리 수정
-  // async updateCategory(
-  //   id: number,
-  //   dto: UpdateCategoryDto,
-  // ): Promise<CategoryEntity> {
-  //   const { label, order, parentId } = dto;
+  async updateOneCategory(
+    id: number,
+    dto: UpdateCategoryDto,
+  ): Promise<CategoryEntity> {
+    const { label, order, groupId } = dto;
 
-  //   // 라벨 변경 요청 처리
-  //   if ('label' in dto) {
-  //     const existingLabel = await this.categoryRepo.findOne({
-  //       where: { label },
-  //     });
-  //     if (existingLabel) {
-  //       throw new ConflictException('this label has already been used'); // 409 에러를 던져줌
-  //     }
-  //   }
+    // 라벨 변경 요청 처리
+    if (typeof label === 'string') {
+      const existingLabel = await this.categoryRepo.findOne({
+        where: { label },
+      });
+      if (existingLabel && existingLabel.id !== id) {
+        throw new ConflictException('this label has already been used'); // 409 에러를 던져줌
+      }
+    }
 
-  //   // 부모 카테고리 변경 요청
-  //   let parent: CategoryEntity | null = null;
-  //   if ('parentId' in dto) {
-  //     parent = await this.categoryRepo.findOne({
-  //       where: { id: parentId },
-  //     });
+    // 부모 카테고리 변경 요청
+    let parentGroup: GroupEntity | null = null;
+    if ('parentId' in dto) {
+      parentGroup = await this.groupRepo.findOne({
+        where: { id: groupId },
+      });
 
-  //     // 부모 카테고리가 실제로 존재하지 않는다면
-  //     if (!parent) {
-  //       throw new NotFoundException(`Parent with ID ${parentId} not found`);
-  //     }
-  //   }
+      // 부모 카테고리가 실제로 존재하지 않는다면
+      if (!parentGroup) {
+        throw new NotFoundException(`Parent with ID ${groupId} not found`);
+      }
+    }
 
-  //   // 순서 카테고리 변경 요청
-  //   if ('order' in dto) {
-  //     const existingOrder = await this.categoryRepo.findOne({
-  //       where: { order, parent: { id: parent ? parent.id : null } },
-  //     });
+    // 순서 카테고리 변경 요청
+    if (typeof order === 'number') {
+      const existingOrder = await this.categoryRepo.findOne({
+        where: { order, group: { id: parentGroup ? parentGroup.id : null } },
+      });
 
-  //     // 해당 부모 카테고리의 순서에 이미 있다면
-  //     if (existingOrder) {
-  //       throw new ConflictException(
-  //         'this order with parents has already been used',
-  //       );
-  //     }
-  //   }
+      // 해당 부모 카테고리의 순서에 이미 있다면
+      if (existingOrder && existingOrder.id !== id) {
+        throw new ConflictException(
+          'this order with parents has already been used',
+        );
+      }
+    }
 
-  //   const result = await this.categoryRepo.update(id, dto);
+    const result = await this.categoryRepo.update(id, dto);
 
-  //   if (result.affected === 0) {
-  //     throw new NotFoundException(`Category with ID ${id} not found`);
-  //   }
+    if (result.affected === 0) {
+      throw new NotFoundException(`Category with ID ${id} not found`);
+    }
 
-  //   const updated = await this.categoryRepo.findOne({ where: { id } });
+    const updated = await this.categoryRepo.findOne({ where: { id } });
 
-  //   if (!updated) {
-  //     throw new NotFoundException(`Category with ID ${id} not found`);
-  //   }
+    if (!updated) {
+      throw new NotFoundException(`Category with ID ${id} not found`);
+    }
 
-  //   return updated;
-  // }
+    return updated;
+  }
 
   // 4. <DELETE> 카테고리 삭제
+  async deleteOneCategory(id: number) {
+    const category = await this.categoryRepo.findOne({ where: { id } });
+
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${id} not found`);
+    }
+
+    await this.categoryRepo.remove(category); // 따로 응답을 내려주지 않음 (204)
+  }
 }
