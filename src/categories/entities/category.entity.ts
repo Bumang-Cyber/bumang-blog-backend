@@ -4,9 +4,8 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -39,10 +38,7 @@ export class CategoryEntity {
   @JoinColumn()
   group: GroupEntity;
 
-  @ManyToMany(() => PostEntity, (post) => post.categories, {
-    nullable: true,
-    onDelete: 'SET NULL', // 카테고리 삭제 시 연결된 Post를 null로.
-  })
-  @JoinTable()
+  // set null은 post 엔티티 쪽에서.
+  @OneToMany(() => PostEntity, (post) => post.category)
   posts: PostEntity[];
 }

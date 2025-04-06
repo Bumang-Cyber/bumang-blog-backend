@@ -70,7 +70,6 @@ export class CategoriesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() { label, order, groupId }: UpdateCategoryDto,
   ) {
-    console.log(id, label, order, groupId, '???');
     return await this.categoriesService.updateOneCategory(id, {
       label,
       order,
