@@ -27,7 +27,7 @@ export class CategoriesService {
   /**
    * @GROUP
    */
-  // 1. 그룹 조회
+  // 1. 그룹 전체 조회
   async findAllGroupRaw() {
     const groups = await this.groupRepo.find({
       relations: ['categories'],
@@ -37,28 +37,38 @@ export class CategoriesService {
     return groups;
   }
 
-  // 2. 그룹 추가
+  // 2. 그룹 단일 조회
+  async findOneGroup(id: number) {
+    const group = await this.groupRepo.findOne({
+      where: { id },
+      relations: ['categories'],
+    });
+
+    if (!group) {
+      throw new NotFoundException(`Group with ID ${id} not found`);
+    }
+
+    return group;
+  }
+
+  // 3. 그룹 추가
   async creeateOneGroup(dto: CreateGroupDto): Promise<GroupEntity> {
     const { label, order } = dto;
 
-    console.log(label, order, 1);
     const existingLabel = await this.groupRepo.findOne({
       where: { label },
     });
 
-    console.log(existingLabel, 2);
     if (existingLabel) {
       throw new ConflictException('Group label is already in use');
     }
 
     let finalOrder: number = order;
-    console.log(finalOrder, 3);
+
     if (typeof order === 'number') {
-      console.log(finalOrder, 3.5);
       const existingOrder = await this.groupRepo.findOne({
         where: { order: finalOrder },
       });
-      console.log(existingOrder, 4);
 
       if (existingOrder) {
         throw new ConflictException('Group Order is already in use');
@@ -73,18 +83,16 @@ export class CategoriesService {
       // 계층에서 가장 후순위 오더로 지정
       finalOrder = maxOrderGroup ? maxOrderGroup[0].order + 1 : 1;
     }
-    console.log(finalOrder, 6);
 
     const group = this.groupRepo.create({
       label,
       order: finalOrder,
     });
-    console.log(group, 7);
 
     return this.groupRepo.save(group);
   }
 
-  // 3. 그룹 수정
+  // 4. 그룹 수정
   async updateOneGroup(id: number, dto: UpdateGroupDto) {
     const { label, order } = dto;
     console.log(label, order);
@@ -130,7 +138,7 @@ export class CategoriesService {
     return res;
   }
 
-  // 4. 그룹 삭제
+  // 5. 그룹 삭제
   async deleteOneGroup(id: number) {
     const group = await this.groupRepo.findOne({
       where: { id },

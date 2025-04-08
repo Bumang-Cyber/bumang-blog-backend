@@ -41,7 +41,15 @@ export class PostsService {
     return query.getMany();
   }
 
-  // 5. 특정 포스트 상세 조회
+  // 5. 특정 포스트 생성
+  async createPost(createPostsDto: CreatePostDto) {
+    const { title, content, authorId, categoryId, tagIds } = createPostsDto;
+    console.log(title, content, authorId, categoryId, tagIds);
+
+    return;
+  }
+
+  // 6. 특정 포스트 상세 조회
   async findPostDetail() {
     const groups = await this.postRepo.find({
       relations: ['category'],
@@ -51,14 +59,8 @@ export class PostsService {
     return groups;
   }
 
-  async createPost(createPostsDto: CreatePostDto) {
-    console.log(createPostsDto);
-
-    return true;
-  }
-
-  // 6. 특정 포스트 수정
-  async findPost() {
+  // 7. 특정 포스트 수정
+  async updatePost() {
     const groups = await this.postRepo.find({
       relations: ['category'],
       order: { id: 'DESC' },

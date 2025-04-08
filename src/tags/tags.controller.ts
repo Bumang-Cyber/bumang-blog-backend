@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { CreateTagDto } from './dto/create-tag.dto';
@@ -17,27 +18,31 @@ export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Post()
-  create(@Body() createTagDto: CreateTagDto) {
-    return this.tagsService.create(createTagDto);
+  async create(@Body() createTagDto: CreateTagDto) {
+    return await this.tagsService.createTag(createTagDto);
   }
 
   @Get()
-  findAll() {
-    return this.tagsService.findAll();
+  async findAllTag() {
+    return await this.tagsService.findAllTag();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.tagsService.findOne(id);
+  async findOneTag(@Param('id', ParseIntPipe) id: number) {
+    return await this.tagsService.findOneTag(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagsService.update(+id, updateTagDto);
+  async updateOneTag(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateTagDto: UpdateTagDto,
+  ) {
+    return await this.tagsService.updateOneTag(id, updateTagDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.tagsService.remove(id);
+  @HttpCode(204)
+  async removeOneTag(@Param('id', ParseIntPipe) id: number) {
+    return await this.tagsService.removeOneTag(id);
   }
 }

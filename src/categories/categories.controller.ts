@@ -27,6 +27,11 @@ export class CategoriesController {
     return await this.categoriesService.findAllGroupRaw();
   }
 
+  @Get('groups/:id')
+  async findOneGroups(@Param('id', ParseIntPipe) id: number) {
+    return await this.categoriesService.findOneGroup(id);
+  }
+
   @Post('groups')
   async createOneGroup(@Body() { label, order = null }: CreateGroupDto) {
     return await this.categoriesService.creeateOneGroup({ label, order });
