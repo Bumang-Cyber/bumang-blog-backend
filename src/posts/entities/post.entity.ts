@@ -23,7 +23,7 @@ export class PostEntity {
   @Column()
   title: string;
 
-  @Column({ type: 'json' })
+  @Column('jsonb')
   content: Record<string, any>;
 
   @CreateDateColumn()
