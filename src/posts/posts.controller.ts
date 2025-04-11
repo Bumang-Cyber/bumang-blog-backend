@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   ParseIntPipe,
   Post,
   Query,
@@ -25,5 +26,10 @@ export class PostsController {
   @Post()
   async createPost(@Body() createPostDto: CreatePostDto) {
     return await this.postsService.createPost(createPostDto);
+  }
+
+  @Get(':id')
+  async findPostDetail(@Param('id', ParseIntPipe) id: number) {
+    return await this.postsService.findPostDetail(id);
   }
 }

@@ -6,6 +6,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { TagsEntity } from 'src/tags/entities/tag.entity';
 import { CategoryEntity } from 'src/categories/entities/category.entity';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
 export class PostsService {
@@ -103,18 +104,42 @@ export class PostsService {
   }
 
   // 6. 특정 포스트 상세 조회
-  async findPostDetail() {
-    const groups = await this.postRepo.find({
-      relations: ['category'],
+  async findPostDetail(id: number) {
+    const post = await this.postRepo.findOne({
+      where: { id },
+      relations: ['category', 'comments', 'tags', 'category.group'],
       order: { id: 'DESC' },
     });
 
-    return groups;
+    if (!post) {
+      throw new NotFoundException('Post were not found');
+    }
+
+    return post;
   }
 
+  // export class CreatePostDto {
+  //   @IsString()
+  //   title: string;
+
+  //   @IsArray()
+  //   @IsObject({ each: true }) // 배열 안의 각 요소가 객체인지 확인
+  //   content: any[];
+
+  //   @IsNumber()
+  //   authorId: number;
+
+  //   @IsNumber()
+  //   categoryId: number;
+
+  //   @IsOptional()
+  //   @IsArray()
+  //   @IsNumber({}, { each: true })
+  //   tagIds: number[];
+  // }
   // 7. 특정 포스트 수정
-  async updatePost() {
-    const groups = await this.postRepo.find({
+  async updatePost(id: number, dto: UpdatePostDto) {
+    const groups = await this.postRepo.findOne({
       relations: ['category'],
       order: { id: 'DESC' },
     });
