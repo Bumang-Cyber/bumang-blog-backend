@@ -17,15 +17,17 @@ export class CommentEntity {
   @Column({ length: 200 })
   content: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
   @ManyToOne(() => UserEntity, (user) => user.comments, { nullable: false })
   author: UserEntity;
 
   @ManyToOne(() => PostEntity, (post) => post.comments, { nullable: false })
   post: PostEntity;
+
+  // 자동생성
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
