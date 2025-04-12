@@ -22,9 +22,15 @@ export class PostsController {
   async findAllPosts(
     @Query('groupId', ParseIntPipe) groupId: number,
     @Query('categoryId', ParseIntPipe) categoryId: number,
-    @Query('tagId', ParseIntPipe) tagId: number,
+    @Query('tagIds') tagIds: string[],
   ) {
-    return await this.postsService.findAllPosts({ groupId, categoryId, tagId });
+    const validatedTags = Array.isArray(tagIds) ? tagIds : [tagIds];
+    const parsedTagIds = validatedTags.map((id) => parseInt(id, 10));
+    return await this.postsService.findAllPosts({
+      groupId,
+      categoryId,
+      tagIds: parsedTagIds,
+    });
   }
 
   @Post()

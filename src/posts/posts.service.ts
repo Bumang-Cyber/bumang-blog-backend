@@ -35,9 +35,9 @@ export class PostsService {
   async findAllPosts(filter: {
     groupId?: number;
     categoryId?: number;
-    tagId?: number;
+    tagIds?: number[];
   }) {
-    const { groupId, categoryId, tagId } = filter;
+    const { groupId, categoryId, tagIds } = filter;
 
     const query = this.postRepo
       .createQueryBuilder('post')
@@ -49,8 +49,9 @@ export class PostsService {
       query.where('group.id = :groupId', { groupId });
     } else if (categoryId) {
       query.where('category.id = :categoryId', { categoryId });
-    } else if (tagId) {
-      query.where('tag.id = :tagId', { tagId });
+    } else if (Array.isArray(tagIds) && tagIds.length !== 0) {
+      // 기존: query.where('tag.id = :tagIds', { tagIds });
+      query.where('tag.id IN (:...tagIds)', { tagIds });
     }
 
     query.orderBy('post.id', 'DESC');
@@ -181,7 +182,7 @@ export class PostsService {
 
     await this.postRepo.save(existingPost);
 
-    return existingPost;
+    return { message: `Post ${id} deleted successfully` };
   }
 
   // 8. 특정 포스트 삭제
