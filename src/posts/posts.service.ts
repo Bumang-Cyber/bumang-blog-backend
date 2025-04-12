@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { PostEntity } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -118,37 +122,78 @@ export class PostsService {
     return post;
   }
 
-  // export class CreatePostDto {
-  //   @IsString()
-  //   title: string;
-
-  //   @IsArray()
-  //   @IsObject({ each: true }) // 배열 안의 각 요소가 객체인지 확인
-  //   content: any[];
-
-  //   @IsNumber()
-  //   authorId: number;
-
-  //   @IsNumber()
-  //   categoryId: number;
-
-  //   @IsOptional()
-  //   @IsArray()
-  //   @IsNumber({}, { each: true })
-  //   tagIds: number[];
-  // }
   // 7. 특정 포스트 수정
   async updatePost(id: number, dto: UpdatePostDto) {
-    const groups = await this.postRepo.findOne({
-      relations: ['category'],
-      order: { id: 'DESC' },
+    const { title, content, categoryId, tagIds } = dto;
+
+    // 아이디로 조회
+    const existingPost = await this.postRepo.findOne({
+      where: { id },
+      relations: ['category', 'comments', 'tags', 'category.group'],
     });
 
-    return groups;
+    if (!existingPost) {
+      throw new NotFoundException();
+    }
+
+    if (typeof title !== 'string' || title === '') {
+      throw new BadRequestException('Invalid Title');
+    }
+
+    existingPost.title = title;
+
+    if (typeof content !== 'string' || content === '') {
+      throw new BadRequestException('Invalid Content');
+    }
+
+    existingPost.content = content;
+
+    const existingCategory = await this.categoryRepo.findOne({
+      where: { id: categoryId },
+    });
+
+    if (!existingCategory) {
+      throw new NotFoundException(
+        `Category with ID ${categoryId} does not exist`,
+      );
+    }
+
+    existingPost.category = existingCategory;
+
+    let validTags: TagsEntity[] = [];
+    if (tagIds && tagIds.length > 0) {
+      // 순회가 끝난 다음에 Promise.all(...)이 resolve or reject를 시작..
+      // 그러므로 순회 중에 Promise<TagEntity>가 반환되면 에러나는거 아닌가? 생각할 필요 x
+      const tags = await Promise.all(
+        tagIds.map((id) => this.tagRepo.findOne({ where: { id } })),
+      );
+
+      // 타입만 확정시킴
+      validTags = tags.filter((tag): tag is TagsEntity => !!tag);
+
+      // 유효하지 않은 태그가 있었다고 한다면...
+      if (validTags.length !== tagIds.length) {
+        throw new NotFoundException('Some tags were not found');
+      }
+    }
+
+    existingPost.tags = validTags;
+
+    await this.postRepo.save(existingPost);
+
+    return existingPost;
   }
 
-  // 7. 특정 포스트 삭제
-  async deletePost() {
-    return;
+  // 8. 특정 포스트 삭제
+  async deletePost(id: number) {
+    const existingPost = await this.postRepo.findOne({
+      where: { id },
+    });
+
+    if (!existingPost) {
+      throw new NotFoundException(`Post with ID ${id} does not exist`);
+    }
+
+    await this.postRepo.remove(existingPost);
   }
 }

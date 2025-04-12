@@ -95,20 +95,19 @@ export class CategoriesService {
   // 4. 그룹 수정
   async updateOneGroup(id: number, dto: UpdateGroupDto) {
     const { label, order } = dto;
-    console.log(label, order);
 
     // 아이디로 조회
-    const existingOne = await this.groupRepo.findOne({
+    const existingGroup = await this.groupRepo.findOne({
       where: { id },
     });
 
     // 아이디가 존재하지 않으면 에러처리
-    if (!existingOne) {
+    if (!existingGroup) {
       throw new NotFoundException('Group not found');
     }
 
     // 찾으면 newOne에 할당.
-    const newOne = existingOne;
+    const newOne = existingGroup;
     if (typeof label === 'string') {
       const existingLabel = await this.groupRepo.findOne({
         where: { label },
