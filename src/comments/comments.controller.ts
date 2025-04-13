@@ -10,6 +10,8 @@ import {
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
+import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
 
 @Controller('comments')
 export class CommentsController {
@@ -32,7 +34,8 @@ export class CommentsController {
     return await this.commentsService.createOneComment(id, { content });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, IsOwnerGuard)
+  @IsOwner('comment')
   @Post(':id')
   async updateOneComment(
     @Param('id', ParseIntPipe) id: number,
@@ -42,6 +45,7 @@ export class CommentsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @IsOwner('comment')
   @Post(':id')
   async deleteOneComment(@Param('id', ParseIntPipe) id: number) {
     return await this.commentsService.deleteOneComment(id);

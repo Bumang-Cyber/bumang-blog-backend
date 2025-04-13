@@ -30,7 +30,21 @@ export class CommentsService {
     return comments;
   }
 
-  // 2. 댓글 생성하기
+  // 2. 댓글 하나 조회
+  async findOneComment(id: number) {
+    const comment = await this.commentRepo.findOne({
+      where: { id },
+      relations: ['post', 'author'],
+    });
+
+    if (!comment) {
+      throw new NotFoundException(`Comment with ID ${id} does not exist.`);
+    }
+
+    return comment;
+  }
+
+  // 3. 댓글 생성하기
   async createOneComment(postId: number, dto: CreateCommentDto) {
     const { content } = dto;
 
@@ -54,7 +68,7 @@ export class CommentsService {
     return await this.commentRepo.save(comment);
   }
 
-  // 3. 특정 댓글 수정하기
+  // 4. 특정 댓글 수정하기
   async updateOneComment(id: number, dto: UpdateCommentDto) {
     const { content } = dto;
     const comment = await this.commentRepo.findOne({
@@ -73,7 +87,7 @@ export class CommentsService {
     return await this.commentRepo.save(comment);
   }
 
-  // 4. 특정 댓글 삭제하기
+  // 5. 특정 댓글 삭제하기
   async deleteOneComment(id: number) {
     const comment = await this.commentRepo.findOne({
       where: { id },

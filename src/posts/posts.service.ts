@@ -112,7 +112,7 @@ export class PostsService {
   async findPostDetail(id: number) {
     const post = await this.postRepo.findOne({
       where: { id },
-      relations: ['category', 'comments', 'tags', 'category.group'],
+      relations: ['category', 'comments', 'tags', 'category.group', 'author'],
       order: { id: 'DESC' },
     });
 
