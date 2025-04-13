@@ -18,6 +18,8 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesEnum } from 'src/users/const/roles.const';
+import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
+import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -50,8 +52,8 @@ export class PostsController {
     return await this.postsService.findPostDetail(id);
   }
 
-  // TODO: 자기자신만 접근 가능하도록....
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, IsOwnerGuard)
+  @IsOwner('post')
   @Patch(':id')
   async updatePost(
     @Param('id', ParseIntPipe) id: number,
@@ -60,8 +62,8 @@ export class PostsController {
     return await this.postsService.updatePost(id, updatePostDto);
   }
 
-  // 자기자신만 접근 가능하도록....
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, IsOwnerGuard)
+  @IsOwner('post')
   @Delete(':id')
   @HttpCode(204)
   async removeOnePost(@Param('id', ParseIntPipe) id: number) {

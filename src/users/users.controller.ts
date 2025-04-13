@@ -19,6 +19,8 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { RolesEnum } from './const/roles.const';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
+import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -47,8 +49,8 @@ export class UsersController {
     return plainToInstance(UserEntity, user);
   }
 
-  // TODO: 자기자신만
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, IsOwnerGuard)
+  @IsOwner('user')
   @Roles(RolesEnum.ADMIN, RolesEnum.USER)
   @Patch(':id')
   async update(

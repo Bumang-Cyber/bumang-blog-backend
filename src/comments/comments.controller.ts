@@ -44,7 +44,7 @@ export class CommentsController {
     return await this.commentsService.updateOneComment(id, { content });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, IsOwnerGuard)
   @IsOwner('comment')
   @Post(':id')
   async deleteOneComment(@Param('id', ParseIntPipe) id: number) {
