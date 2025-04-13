@@ -31,8 +31,8 @@ export class CommentsService {
   }
 
   // 2. 댓글 생성하기
-  async createOneComment(dto: CreateCommentDto) {
-    const { content, postId } = dto;
+  async createOneComment(postId: number, dto: CreateCommentDto) {
+    const { content } = dto;
 
     const post = await this.postRepo.findOne({
       where: { id: postId },
