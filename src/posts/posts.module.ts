@@ -6,6 +6,7 @@ import { PostEntity } from './entities/post.entity';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { TagsEntity } from 'src/tags/entities/tag.entity';
 import { CategoryEntity } from 'src/categories/entities/category.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CategoryEntity } from 'src/categories/entities/category.entity';
       TagsEntity,
       CategoryEntity,
     ]),
+    AuthModule,
   ],
   controllers: [PostsController],
   providers: [PostsService],
