@@ -50,7 +50,7 @@ export class PostsController {
     return await this.postsService.findPostDetail(id);
   }
 
-  // 자기자신만 접근 가능하도록....
+  // TODO: 자기자신만 접근 가능하도록....
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async updatePost(
