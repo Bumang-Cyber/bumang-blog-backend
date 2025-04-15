@@ -17,15 +17,18 @@ import { TagsModule } from './tags/tags.module';
       type: 'postgres',
       host: '127.0.0.1',
       port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'postgres',
+      username: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DB,
       entities: [__dirname + '/**/*.entity.{ts,js}'],
       // nest.js의 typeorm 코드와 실제 db환경을 연동할 것인가?
       // 개발환경에선 false
       synchronize: true,
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+    }),
     UsersModule,
     PostsModule,
     CategoriesModule,
