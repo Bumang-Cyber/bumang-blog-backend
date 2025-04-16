@@ -15,15 +15,15 @@ import { TagsModule } from './tags/tags.module';
     // 타입orm 세팅. postgres서버 만들 때 입력했던대로 제공
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: '127.0.0.1',
-      port: 5432,
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '5432'),
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       entities: [__dirname + '/**/*.entity.{ts,js}'],
       // nest.js의 typeorm 코드와 실제 db환경을 연동할 것인가?
       // 개발환경에선 false
-      synchronize: true,
+      // synchronize: true,
     }),
     ConfigModule.forRoot({
       isGlobal: true,

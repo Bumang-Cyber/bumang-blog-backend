@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { SignupAuthDto } from './dto/signup-auth.dto';
 import * as bcrypt from 'bcrypt';
-import { LoginAuthDto } from './dto/Login-auth.dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
 import { RolesEnum } from 'src/users/const/roles.const';
 
 @Injectable()

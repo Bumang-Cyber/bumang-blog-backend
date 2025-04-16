@@ -2,7 +2,7 @@ import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { LoginAuthDto } from './dto/Login-auth.dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
 import { SignupAuthDto } from './dto/signup-auth.dto';
 import { RequestWithUser } from 'types/user-request.interface';
 
