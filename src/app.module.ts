@@ -13,6 +13,10 @@ import { TagsModule } from './tags/tags.module';
 @Module({
   imports: [
     // 타입orm 세팅. postgres서버 만들 때 입력했던대로 제공
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -23,11 +27,7 @@ import { TagsModule } from './tags/tags.module';
       entities: [__dirname + '/**/*.entity.{ts,js}'],
       // nest.js의 typeorm 코드와 실제 db환경을 연동할 것인가?
       // 개발환경에선 false
-      // synchronize: true,
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      synchronize: true,
     }),
     UsersModule,
     PostsModule,
