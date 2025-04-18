@@ -34,6 +34,6 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/app  # ← EC2의 실제 디렉토리 경로로 수정
+            cd /home/ec2-user/bumang-blog-backend
             docker-compose -f docker-compose.prod.yaml pull app
             docker-compose -f docker-compose.prod.yaml up -d --no-deps --build app
