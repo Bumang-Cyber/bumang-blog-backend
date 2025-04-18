@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -27,15 +28,28 @@ export class PostsController {
 
   @Get()
   async findAllPosts(
-    @Query('groupId', ParseIntPipe) groupId: number,
-    @Query('categoryId', ParseIntPipe) categoryId: number,
-    @Query('tagIds') tagIds: string[],
+    @Query('groupId') groupId?: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('tagIds') tagIds?: string[],
   ) {
-    const validatedTags = Array.isArray(tagIds) ? tagIds : [tagIds];
+    const parsedGroupId = groupId !== undefined ? +groupId : undefined;
+    const parsedCategoryId = categoryId !== undefined ? +categoryId : undefined;
+
+    if (groupId && isNaN(parsedGroupId)) {
+      throw new BadRequestException('groupId must be a number');
+    }
+    if (categoryId && isNaN(parsedCategoryId)) {
+      throw new BadRequestException('categoryId must be a number');
+    }
+
+    // tagsId같은 경우 연달아 여러 개 쓰면 배열로 처리됨.
+    const validatedTags = Array.isArray(tagIds)
+      ? tagIds
+      : [tagIds].filter(Boolean);
     const parsedTagIds = validatedTags.map((id) => parseInt(id, 10));
     return await this.postsService.findAllPosts({
-      groupId,
-      categoryId,
+      groupId: parsedGroupId,
+      categoryId: parsedCategoryId,
       tagIds: parsedTagIds,
     });
   }

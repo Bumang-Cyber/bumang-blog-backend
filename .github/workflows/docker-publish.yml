@@ -1,0 +1,36 @@
+name: Deploy to EC2 with Docker
+
+on:
+  push:
+    branches:
+      - main # main 브랜치에 push되면 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Build and Push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/bumang-blog-backend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/bumang-blog-backend:latest
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/app  # ← EC2 내 프로젝트 경로로 이동
+            docker-compose pull app
+            docker-compose up -d --no-deps --build app
