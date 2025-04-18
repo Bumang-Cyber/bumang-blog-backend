@@ -14,7 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   app:
-    image: your-dockerhub-username/bumang-blog-backend:latest
+    image: bumang/bumang-blog-backend:latest
     container_name: bumang_blog_backend
     ports:
       - '3000:3000'
