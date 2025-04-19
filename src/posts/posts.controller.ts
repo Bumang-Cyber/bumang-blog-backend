@@ -78,6 +78,10 @@ export class PostsController {
   }
 
   @Get(':id')
+  @ApiOperation({
+    summary: '게시글 상세 조회',
+    description: '특정 게시글을 상세 조회합니다.',
+  })
   async findPostDetail(@Param('id', ParseIntPipe) id: number) {
     return await this.postsService.findPostDetail(id);
   }
