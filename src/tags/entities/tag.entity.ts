@@ -1,9 +1,12 @@
+import { GroupEntity } from 'src/categories/entities/group.entity';
 import { PostEntity } from 'src/posts/entities/post.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -24,4 +27,8 @@ export class TagsEntity {
 
   @ManyToMany(() => PostEntity, (post) => post.tags)
   posts: PostEntity[];
+
+  @ManyToOne(() => GroupEntity, (group) => group.tags)
+  @JoinColumn()
+  group: GroupEntity;
 }

@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CategoryEntity } from './category.entity';
+import { TagsEntity } from 'src/tags/entities/tag.entity';
 
 @Entity()
 export class GroupEntity {
@@ -31,4 +32,7 @@ export class GroupEntity {
 
   @OneToMany(() => CategoryEntity, (category) => category.group)
   categories: CategoryEntity[];
+
+  @OneToMany(() => TagsEntity, (tag) => tag.group)
+  tags: TagsEntity[];
 }
