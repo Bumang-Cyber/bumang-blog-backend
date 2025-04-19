@@ -63,7 +63,7 @@ export class PostsController {
     name: 'tagIds',
     required: false,
     description: '태그 아이디로 조회 (중첩 가능)',
-    // example: 'number[]',
+    example: 'number[]',
     type: 'number[]',
   })
   async findAllPosts(
