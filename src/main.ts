@@ -17,8 +17,8 @@ async function bootstrap() {
 
   // ✅ Swagger 설정
   const config = new DocumentBuilder()
-    .setTitle('BUMANG API')
-    .setDescription('블로그 백엔드 API 문서입니다.')
+    .setTitle('BUMANG BLOG API')
+    .setDescription('버망 블로그 백엔드 API 문서입니다.')
     .setVersion('1.0')
     .build();
 
