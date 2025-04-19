@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +15,17 @@ async function bootstrap() {
     }),
   );
 
+  // ✅ Swagger 설정
+  const config = new DocumentBuilder()
+    .setTitle('BUMANG API')
+    .setDescription('블로그 백엔드 API 문서입니다.')
+    .setVersion('1.0')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-docs', app, document);
+
+  app.enableCors();
   await app.listen(process.env.APP_PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();
