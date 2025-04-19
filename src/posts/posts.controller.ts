@@ -25,6 +25,7 @@ import {
   ApiBearerAuth,
   ApiExcludeEndpoint,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 
@@ -45,6 +46,25 @@ export class PostsController {
   @ApiOperation({
     summary: '모든 게시글 조회',
     description: 'DB에 있는 모든 게시글 목록을 반환합니다.',
+  })
+  @ApiQuery({
+    name: 'groupId',
+    required: false,
+    description: '그룹 아이디로 조회 시',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'cagegoryId',
+    required: false,
+    description: '최대 개수',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'tagIds',
+    required: false,
+    description: '태그 아이디로 조회 (중첩 가능)',
+    example: 'number[]',
+    // type: 'number[]',
   })
   async findAllPosts(
     @Query('groupId') groupId?: string,
