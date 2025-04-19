@@ -21,13 +21,20 @@ import { RolesEnum } from './const/roles.const';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
 import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
+import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users') // Swagger UI에서 그룹 이름
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get() // 200 OK
+  @ApiOperation({
+    summary: '모든 유저 조회',
+    description: '모든 유저를 조회합니다.',
+  })
+  @ApiExcludeEndpoint()
   async findAllUser() {
     return await this.usersService.findAllUser();
   }
@@ -35,6 +42,10 @@ export class UsersController {
   // 유저 한 명 찾기
   @UseGuards(JwtAuthGuard)
   @Get(':id') // 200 OK
+  @ApiOperation({
+    summary: '특정 유저 조회',
+    description: '특정 유저를 조회합니다.',
+  })
   async findOneUserById(@Param('id', ParseIntPipe) id: number) {
     const user = await this.usersService.findOneUserById(id);
 
@@ -44,6 +55,11 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN)
   @Post() // 201 created
+  @ApiOperation({
+    summary: '새로운 유저 생성',
+    description: '새로운 유저를 생성합니다.',
+  })
+  @ApiExcludeEndpoint()
   async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.createUser(createUserDto);
     return plainToInstance(UserEntity, user);
@@ -53,6 +69,10 @@ export class UsersController {
   @IsOwner('user')
   @Roles(RolesEnum.ADMIN, RolesEnum.USER)
   @Patch(':id')
+  @ApiOperation({
+    summary: '특정 유저 수정',
+    description: '특정 유저 정보를 수정합니다.',
+  })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -65,6 +85,11 @@ export class UsersController {
   @Roles(RolesEnum.ADMIN)
   @HttpCode(204) // "성공했으면 됐지, 딱히 줄 건 없어" → 204. 바디는 따로 없어야 함.
   @Delete(':id')
+  @ApiOperation({
+    summary: '특정 유저 삭제',
+    description: '특정 유저 정보를 삭제합니다.',
+  })
+  @ApiExcludeEndpoint()
   async removeUser(@Param('id', ParseIntPipe) id: number) {
     return await this.usersService.removeUser(id);
   }

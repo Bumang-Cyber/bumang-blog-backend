@@ -21,7 +21,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesEnum } from 'src/users/const/roles.const';
 import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
 import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Posts') // Swagger UI에서 그룹 이름
 @Controller('posts')
@@ -29,7 +29,8 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get('test')
-  @ApiOperation({ summary: '테스트', description: '' })
+  @ApiOperation({ summary: '테스트용', description: '테스트용 API입니다.' })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   findAll() {
     return [{ id: 1, title: '테스트' }];
   }

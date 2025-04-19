@@ -19,7 +19,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesEnum } from 'src/users/const/roles.const';
+import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Category') // Swagger UI에서 그룹 이름
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
@@ -28,11 +30,20 @@ export class CategoriesController {
    * @GROUPS
    */
   @Get('groups')
+  @ApiOperation({
+    summary: '모든 그룹 조회',
+    description: '모든 그룹 데이터를 조회합니다.',
+  })
   async findAllGroups() {
     return await this.categoriesService.findAllGroupRaw();
   }
 
   @Get('groups/:id')
+  @ApiOperation({
+    summary: '특정 그룹 조회',
+    description: '특정 그룹 데이터를 조회합니다.',
+  })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   async findOneGroups(@Param('id', ParseIntPipe) id: number) {
     return await this.categoriesService.findOneGroup(id);
   }
@@ -40,6 +51,11 @@ export class CategoriesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN)
   @Post('groups')
+  @ApiOperation({
+    summary: '새로운 그룹 생성 [ADMIN]',
+    description: '특정 그룹 데이터를 조회합니다.',
+  })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   async createOneGroup(@Body() { label, order = null }: CreateGroupDto) {
     return await this.categoriesService.creeateOneGroup({ label, order });
   }
@@ -47,6 +63,11 @@ export class CategoriesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN)
   @Patch('groups')
+  @ApiOperation({
+    summary: '특정 그룹 업데이트 [ADMIN]',
+    description: '특정 그룹 데이터를 업데이트합니다.',
+  })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   async updateOneGroup(
     @Param('id', ParseIntPipe) id: number,
     @Body() { label, order = null }: UpdateGroupDto,
@@ -58,6 +79,11 @@ export class CategoriesController {
   @Roles(RolesEnum.ADMIN)
   @Delete('groups/:id')
   @HttpCode(204)
+  @ApiOperation({
+    summary: '특정 그룹 삭제 [ADMIN]',
+    description: '특정 그룹 데이터를 삭제합니다.',
+  })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   async deleteOneGroup(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.deleteOneGroup(id);
   }
@@ -66,6 +92,11 @@ export class CategoriesController {
    * @CATEGORIES
    */
   @Get() // 200 OK
+  @ApiOperation({
+    summary: '모든 카테고리 조회',
+    description: '모든 카테고리 데이터를 조회합니다.',
+  })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   async findAllCategories() {
     return await this.categoriesService.findAllCategoryRaw();
   }
@@ -73,6 +104,11 @@ export class CategoriesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN)
   @Post() // 201 created
+  @ApiOperation({
+    summary: '새로운 카테고리 생성 [ADMIN]',
+    description: '새로운 카테고리 데이터를 생성합니다.',
+  })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   async createOneCategory(
     @Body() { label, order = null, groupId = null }: CreateCategoryDto,
   ) {
@@ -86,6 +122,11 @@ export class CategoriesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN)
   @Patch(':id')
+  @ApiOperation({
+    summary: '특정 카테고리 수정 [ADMIN]',
+    description: '특정 카테고리 데이터를 수정합니다.',
+  })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   async updateOneCategory(
     @Param('id', ParseIntPipe) id: number,
     @Body() { label, order, groupId }: UpdateCategoryDto,
@@ -101,6 +142,11 @@ export class CategoriesController {
   @Roles(RolesEnum.ADMIN)
   @Delete(':id')
   @HttpCode(204)
+  @ApiOperation({
+    summary: '특정 카테고리 삭제 [ADMIN]',
+    description: '특정 카테고리 데이터를 삭제합니다.',
+  })
+  @ApiExcludeEndpoint() // 스웨거에 제외
   async deleteOneCategory(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.deleteOneCategory(id);
   }
