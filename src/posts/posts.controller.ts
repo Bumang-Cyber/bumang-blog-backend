@@ -26,6 +26,11 @@ import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @Get('test')
+  findAll() {
+    return [{ id: 1, title: '테스트' }];
+  }
+
   @Get()
   async findAllPosts(
     @Query('groupId') groupId?: string,
