@@ -54,7 +54,7 @@ export class PostsController {
     type: 'number',
   })
   @ApiQuery({
-    name: 'cagegoryId',
+    name: 'categoryId',
     required: false,
     description: '최대 개수',
     type: 'number',
@@ -63,8 +63,8 @@ export class PostsController {
     name: 'tagIds',
     required: false,
     description: '태그 아이디로 조회 (중첩 가능)',
-    example: 'number[]',
-    // type: 'number[]',
+    // example: 'number[]',
+    type: 'number[]',
   })
   async findAllPosts(
     @Query('groupId') groupId?: string,
