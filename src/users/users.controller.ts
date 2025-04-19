@@ -21,8 +21,14 @@ import { RolesEnum } from './const/roles.const';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
 import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
-import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @ApiTags('Users') // Swagger UI에서 그룹 이름
 @Controller('users')
 export class UsersController {

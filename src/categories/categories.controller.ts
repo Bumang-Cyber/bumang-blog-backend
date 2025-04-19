@@ -19,8 +19,14 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesEnum } from 'src/users/const/roles.const';
-import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiBearerAuth() // SWAGGER: 토큰 입력 가능
 @ApiTags('Category') // Swagger UI에서 그룹 이름
 @Controller('categories')
 export class CategoriesController {

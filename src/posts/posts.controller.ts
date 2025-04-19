@@ -21,9 +21,15 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesEnum } from 'src/users/const/roles.const';
 import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
 import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
-import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
-@ApiTags('Posts') // Swagger UI에서 그룹 이름
+@ApiBearerAuth()
+@ApiTags('Posts') // Swagger UI 그룹 이름
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
@@ -67,9 +73,9 @@ export class PostsController {
     });
   }
 
+  @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN, RolesEnum.USER)
-  @Post()
   @ApiOperation({
     summary: '게시글 생성',
     description: 'DB에 게시글을 저장합니다.',

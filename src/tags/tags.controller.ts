@@ -17,8 +17,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { RolesEnum } from 'src/users/const/roles.const';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @ApiTags('tags') // Swagger UI에서 그룹 이름
 @Controller('tags')
 export class TagsController {

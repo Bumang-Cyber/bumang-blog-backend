@@ -5,8 +5,9 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { SignupAuthDto } from './dto/signup-auth.dto';
 import { RequestWithUser } from 'types/user-request.interface';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @ApiTags('Auth') // Swagger UI 그룹 이름
 @Controller('auth')
 export class AuthController {

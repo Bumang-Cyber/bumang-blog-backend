@@ -12,8 +12,9 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
 import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @ApiTags('Comments') // Swagger UI에서 그룹 이름
 @Controller('comments')
 export class CommentsController {
