@@ -24,8 +24,13 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker buildx build --no-cache --platform linux/amd64 \
-            -t ${{ secrets.DOCKER_USERNAME }}/bumang-blog-backend:latest . --push
+          docker buildx build \
+          --no-cache \
+          --platform linux/amd64 \
+          --file Dockerfile.prod \
+          --push \
+          -t ${{ secrets.DOCKER_USERNAME }}/bumang-blog-backend:latest \
+          .
 
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.10
