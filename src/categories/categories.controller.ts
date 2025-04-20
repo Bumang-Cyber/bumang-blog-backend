@@ -63,7 +63,7 @@ export class CategoriesController {
   })
   @ApiExcludeEndpoint() // 스웨거에 제외
   async createOneGroup(@Body() { label, order = null }: CreateGroupDto) {
-    return await this.categoriesService.creeateOneGroup({ label, order });
+    return await this.categoriesService.createOneGroup({ label, order });
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

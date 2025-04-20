@@ -52,7 +52,7 @@ export class CategoriesService {
   }
 
   // 3. 그룹 추가
-  async creeateOneGroup(dto: CreateGroupDto): Promise<GroupEntity> {
+  async createOneGroup(dto: CreateGroupDto): Promise<GroupEntity> {
     const { label, order } = dto;
 
     const existingLabel = await this.groupRepo.findOne({
@@ -80,8 +80,10 @@ export class CategoriesService {
         take: 1,
       });
 
+      console.log(maxOrderGroup, 'maxOrderGroup');
+
       // 계층에서 가장 후순위 오더로 지정
-      finalOrder = maxOrderGroup ? maxOrderGroup[0].order + 1 : 1;
+      finalOrder = maxOrderGroup[0]?.order ? maxOrderGroup[0].order + 1 : 1;
     }
 
     const group = this.groupRepo.create({

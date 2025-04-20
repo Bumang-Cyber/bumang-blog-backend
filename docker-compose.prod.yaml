@@ -4,6 +4,7 @@ services:
   db:
     image: postgres:15
     container_name: bumang_blog_db
+    restart: always
     ports:
       - '5432:5432'
     environment:
@@ -16,6 +17,7 @@ services:
   app:
     image: bumang/bumang-blog-backend:latest
     container_name: bumang_blog_backend
+    restart: always
     ports:
       - '3000:3000'
     depends_on:

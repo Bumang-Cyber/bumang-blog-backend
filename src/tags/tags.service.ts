@@ -8,17 +8,21 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TagsEntity } from './entities/tag.entity';
+import { GroupEntity } from 'src/categories/entities/group.entity';
 
 @Injectable()
 export class TagsService {
   constructor(
     @InjectRepository(TagsEntity)
     private readonly tagRepo: Repository<TagsEntity>,
+
+    @InjectRepository(GroupEntity)
+    private readonly groupRepo: Repository<GroupEntity>,
   ) {}
 
   // 1. 태그 생성
   async createTag(createTagDto: CreateTagDto) {
-    const { title } = createTagDto;
+    const { title, groupId } = createTagDto;
 
     const existingTitle = await this.tagRepo.findOne({
       where: { title },
@@ -28,8 +32,17 @@ export class TagsService {
       throw new ConflictException('This tag title is already in use');
     }
 
+    const existingGroup = await this.groupRepo.findOne({
+      where: { id: groupId },
+    });
+
+    if (!existingGroup) {
+      throw new NotFoundException(`Group with ID: ${groupId} does not exist`);
+    }
+
     return await this.tagRepo.save({
       title,
+      group: existingGroup,
     });
   }
 

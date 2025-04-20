@@ -26,8 +26,8 @@ import { TagsModule } from './tags/tags.module';
       database: process.env.POSTGRES_DB,
       entities: [__dirname + '/**/*.entity.{ts,js}'],
       // nest.js의 typeorm 코드와 실제 db환경을 연동할 것인가?
-      // synchronize: true,
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: true,
+      // synchronize: false
     }),
     UsersModule,
     PostsModule,

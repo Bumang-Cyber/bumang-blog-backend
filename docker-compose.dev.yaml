@@ -14,7 +14,10 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: npm run start:dev
     container_name: bumang_blog_backend
     ports:
       - '3000:3000'
