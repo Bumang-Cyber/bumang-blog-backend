@@ -39,7 +39,7 @@ export class PostsController {
   @ApiOperation({ summary: '테스트용', description: '테스트용 API입니다.' })
   @ApiExcludeEndpoint() // 스웨거에 제외
   findAll() {
-    return [{ id: 1, title: '테스트' }];
+    return [{ id: 1, title: '테스트3' }];
   }
 
   @Get()
