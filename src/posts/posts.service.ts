@@ -12,10 +12,12 @@ import { TagsEntity } from 'src/tags/entities/tag.entity';
 import { CategoryEntity } from 'src/categories/entities/category.entity';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { extractPreviewText } from 'src/common/util/extractPreviewText';
-import { PostResponseDto } from './dto/post-response.dto';
+import { PostListItemResponseDto } from './dto/post-list-item-response.dto';
 import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 import { CreatePostResponseDto } from './dto/create-post-response.dto';
 import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
+import { UpdatePostResponseDto } from './dto/update-post-response.dto';
+import { DeletePostResponseDto } from './dto/delete-post-response.dto';
 
 @Injectable()
 export class PostsService {
@@ -45,7 +47,7 @@ export class PostsService {
       categoryId?: number;
       tagIds?: number[];
     },
-  ): Promise<PaginatedResponseDto<PostResponseDto>> {
+  ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const { groupId, categoryId, tagIds } = filter;
 
     const query = this.postRepo
@@ -71,7 +73,7 @@ export class PostsService {
     // ✅ get [data, totalCount]
     const [posts, totalCount] = await query.getManyAndCount();
 
-    const postDtos = posts.map(PostResponseDto.fromEntity);
+    const postDtos = posts.map(PostListItemResponseDto.fromEntity);
 
     return new PaginatedResponseDto(totalCount, size, page, postDtos);
   }
@@ -149,7 +151,10 @@ export class PostsService {
   }
 
   // 7. 특정 포스트 수정
-  async updatePost(id: number, dto: UpdatePostDto) {
+  async updatePost(
+    id: number,
+    dto: UpdatePostDto,
+  ): Promise<SuccessResponseDto<UpdatePostResponseDto>> {
     const { title, content, categoryId, tagIds } = dto;
 
     // 아이디로 조회
@@ -207,7 +212,9 @@ export class PostsService {
 
     await this.postRepo.save(existingPost);
 
-    return { message: `Post ${id} deleted successfully` };
+    return new SuccessResponseDto(
+      UpdatePostResponseDto.fromEntity(existingPost),
+    );
   }
 
   // 8. 특정 포스트 삭제
@@ -221,5 +228,9 @@ export class PostsService {
     }
 
     await this.postRepo.remove(existingPost);
+
+    return new SuccessResponseDto(
+      DeletePostResponseDto.fromEntity(existingPost),
+    );
   }
 }

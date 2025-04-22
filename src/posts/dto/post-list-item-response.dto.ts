@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PostEntity } from '../entities/post.entity';
 
-export class PostResponseDto {
+export class PostListItemResponseDto {
   @ApiProperty()
   id: number;
 
@@ -26,8 +26,8 @@ export class PostResponseDto {
   @ApiProperty({ example: 'Bumang' })
   author: string;
 
-  static fromEntity(post: PostEntity): PostResponseDto {
-    const dto = new PostResponseDto();
+  static fromEntity(post: PostEntity): PostListItemResponseDto {
+    const dto = new PostListItemResponseDto();
     dto.id = post.id;
     dto.title = post.title;
     dto.previewText = post.previewText;

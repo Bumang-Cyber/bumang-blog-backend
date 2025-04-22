@@ -29,7 +29,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { PostResponseDto } from './dto/post-response.dto';
+import { PostListItemResponseDto } from './dto/post-list-item-response.dto';
 import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 import { CreatePostResponseDto } from './dto/create-post-response.dto';
 
@@ -73,7 +73,7 @@ export class PostsController {
     @Query('groupId') groupId?: string,
     @Query('categoryId') categoryId?: string,
     @Query('tagIds') tagIds?: string[],
-  ): Promise<PaginatedResponseDto<PostResponseDto>> {
+  ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const parsedGroupId = groupId !== undefined ? +groupId : undefined;
     const parsedCategoryId = categoryId !== undefined ? +categoryId : undefined;
     const pageIndex = 1;
