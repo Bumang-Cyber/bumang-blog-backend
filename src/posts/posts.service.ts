@@ -11,6 +11,9 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { TagsEntity } from 'src/tags/entities/tag.entity';
 import { CategoryEntity } from 'src/categories/entities/category.entity';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { extractPreviewText } from 'src/common/util/extractPreviewText';
+import { PostResponseDto } from './dto/post-response.dto';
+import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 
 @Injectable()
 export class PostsService {
@@ -32,11 +35,15 @@ export class PostsService {
   // 2. 특정 카테고리의 포스트 조회 (pagenation)
   // 3. 특정 그룹의 포스트 조회 (pagenation)
   // 4. 특정 태그의 포스트 조회 (pagenation)
-  async findAllPosts(filter: {
-    groupId?: number;
-    categoryId?: number;
-    tagIds?: number[];
-  }) {
+  async findPosts(
+    page: number,
+    size: number,
+    filter: {
+      groupId?: number;
+      categoryId?: number;
+      tagIds?: number[];
+    },
+  ): Promise<PaginatedResponseDto<PostResponseDto>> {
     const { groupId, categoryId, tagIds } = filter;
 
     const query = this.postRepo
@@ -56,7 +63,15 @@ export class PostsService {
 
     query.orderBy('post.id', 'DESC');
 
-    return query.getMany();
+    // ✅ pagination 적용
+    query.skip((page - 1) * size).take(size);
+
+    // ✅ get [data, totalCount]
+    const [posts, totalCount] = await query.getManyAndCount();
+
+    const postDtos = posts.map(PostResponseDto.fromEntity);
+
+    return new PaginatedResponseDto(totalCount, size, page, postDtos);
   }
 
   // 5. 특정 포스트 생성
@@ -96,9 +111,13 @@ export class PostsService {
       }
     }
 
+    // JSON -> 맨 첫 문장
+    const previewText = extractPreviewText(content); // blocks에서 첫 문장 뽑는 함수
+
     const post = this.postRepo.create({
       title,
       content,
+      previewText,
       author: existingAuthor,
       category: existingCategory,
       tags: validTags,

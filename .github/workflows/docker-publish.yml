@@ -25,7 +25,6 @@ jobs:
       - name: Build and Push Docker image
         run: |
           docker buildx build \
-          --no-cache \
           --platform linux/amd64 \
           --file Dockerfile.prod \
           --push \

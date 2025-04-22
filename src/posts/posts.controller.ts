@@ -28,6 +28,8 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { PostResponseDto } from './dto/post-response.dto';
+import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 
 @ApiBearerAuth()
 @ApiTags('Posts') // Swagger UI 그룹 이름
@@ -36,7 +38,6 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get('test')
-  @ApiOperation({ summary: '테스트용', description: '테스트용 API입니다.' })
   @ApiExcludeEndpoint() // 스웨거에 제외
   findAll() {
     return [{ id: 1, title: '테스트3' }];
@@ -70,9 +71,11 @@ export class PostsController {
     @Query('groupId') groupId?: string,
     @Query('categoryId') categoryId?: string,
     @Query('tagIds') tagIds?: string[],
-  ) {
+  ): Promise<PaginatedResponseDto<PostResponseDto>> {
     const parsedGroupId = groupId !== undefined ? +groupId : undefined;
     const parsedCategoryId = categoryId !== undefined ? +categoryId : undefined;
+    const pageIndex = 1;
+    const pageSize = 10;
 
     if (groupId && isNaN(parsedGroupId)) {
       throw new BadRequestException('groupId must be a number');
@@ -86,11 +89,15 @@ export class PostsController {
       ? tagIds
       : [tagIds].filter(Boolean);
     const parsedTagIds = validatedTags.map((id) => parseInt(id, 10));
-    return await this.postsService.findAllPosts({
-      groupId: parsedGroupId,
-      categoryId: parsedCategoryId,
-      tagIds: parsedTagIds,
-    });
+    return await this.postsService.findPosts(
+      pageIndex, //
+      pageSize,
+      {
+        groupId: parsedGroupId,
+        categoryId: parsedCategoryId,
+        tagIds: parsedTagIds,
+      },
+    );
   }
 
   @Post()

@@ -26,6 +26,9 @@ export class PostEntity {
   @Column('jsonb')
   content: Record<string, any>;
 
+  @Column({ type: 'text', nullable: true })
+  previewText: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
