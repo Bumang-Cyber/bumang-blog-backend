@@ -14,6 +14,8 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { extractPreviewText } from 'src/common/util/extractPreviewText';
 import { PostResponseDto } from './dto/post-response.dto';
 import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
+import { CreatePostResponseDto } from './dto/create-post-response.dto';
+import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
 
 @Injectable()
 export class PostsService {
@@ -75,7 +77,9 @@ export class PostsService {
   }
 
   // 5. 특정 포스트 생성
-  async createPost(createPostDto: CreatePostDto) {
+  async createPost(
+    createPostDto: CreatePostDto,
+  ): Promise<SuccessResponseDto<CreatePostResponseDto>> {
     const { title, content, authorId, categoryId, tagIds } = createPostDto;
 
     const existingAuthor = await this.userRepo.findOne({
@@ -124,7 +128,9 @@ export class PostsService {
       comments: [],
     });
 
-    return this.postRepo.save(post);
+    await this.postRepo.save(post);
+
+    return new SuccessResponseDto(CreatePostResponseDto.fromEntity(post));
   }
 
   // 6. 특정 포스트 상세 조회

@@ -23,6 +23,7 @@ import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
 import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
   ApiExcludeEndpoint,
   ApiOperation,
   ApiQuery,
@@ -30,6 +31,7 @@ import {
 } from '@nestjs/swagger';
 import { PostResponseDto } from './dto/post-response.dto';
 import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
+import { CreatePostResponseDto } from './dto/create-post-response.dto';
 
 @ApiBearerAuth()
 @ApiTags('Posts') // Swagger UI 그룹 이름
@@ -107,6 +109,7 @@ export class PostsController {
     summary: '게시글 생성',
     description: 'DB에 게시글을 저장합니다.',
   })
+  @ApiCreatedResponse({ type: CreatePostResponseDto })
   async createPost(@Body() createPostDto: CreatePostDto) {
     return await this.postsService.createPost(createPostDto);
   }
