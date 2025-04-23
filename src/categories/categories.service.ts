@@ -13,6 +13,8 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
+import { GroupedMenuTreeResponseDto } from './dto/grouped-menu-tree.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -297,5 +299,16 @@ export class CategoriesService {
     }
 
     await this.categoryRepo.remove(category); // 따로 응답을 내려주지 않음 (204)
+  }
+
+  async findGroupedCategoryTree() {
+    const groups = await this.groupRepo.find({
+      order: { order: 'ASC' },
+      relations: ['categories'],
+    });
+
+    return new SuccessResponseDto(
+      groups.map(GroupedMenuTreeResponseDto.fromEntity),
+    );
   }
 }

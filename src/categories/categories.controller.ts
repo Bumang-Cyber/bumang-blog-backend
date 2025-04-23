@@ -44,6 +44,15 @@ export class CategoriesController {
     return await this.categoriesService.findAllGroupRaw();
   }
 
+  @Get('groups/menu')
+  @ApiOperation({
+    summary: '메뉴 구조 반환',
+    description: '그룹과 카테고리의 트리구조를 반환합니다.',
+  })
+  async findGroupedCategoryTree() {
+    return this.categoriesService.findGroupedCategoryTree();
+  }
+
   @Get('groups/:id')
   @ApiOperation({
     summary: '특정 그룹 조회',
