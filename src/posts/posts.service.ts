@@ -15,7 +15,6 @@ import { extractPreviewText } from 'src/common/util/extractPreviewText';
 import { PostListItemResponseDto } from './dto/post-list-item-response.dto';
 import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 import { CreatePostResponseDto } from './dto/create-post-response.dto';
-import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
 import { UpdatePostResponseDto } from './dto/update-post-response.dto';
 import { DeletePostResponseDto } from './dto/delete-post-response.dto';
 
@@ -81,7 +80,7 @@ export class PostsService {
   // 5. 특정 포스트 생성
   async createPost(
     createPostDto: CreatePostDto,
-  ): Promise<SuccessResponseDto<CreatePostResponseDto>> {
+  ): Promise<CreatePostResponseDto> {
     const { title, content, authorId, categoryId, tagIds } = createPostDto;
 
     const existingAuthor = await this.userRepo.findOne({
@@ -132,7 +131,7 @@ export class PostsService {
 
     await this.postRepo.save(post);
 
-    return new SuccessResponseDto(CreatePostResponseDto.fromEntity(post));
+    return CreatePostResponseDto.fromEntity(post);
   }
 
   // 6. 특정 포스트 상세 조회
@@ -154,7 +153,7 @@ export class PostsService {
   async updatePost(
     id: number,
     dto: UpdatePostDto,
-  ): Promise<SuccessResponseDto<UpdatePostResponseDto>> {
+  ): Promise<UpdatePostResponseDto> {
     const { title, content, categoryId, tagIds } = dto;
 
     // 아이디로 조회
@@ -212,9 +211,7 @@ export class PostsService {
 
     await this.postRepo.save(existingPost);
 
-    return new SuccessResponseDto(
-      UpdatePostResponseDto.fromEntity(existingPost),
-    );
+    return UpdatePostResponseDto.fromEntity(existingPost);
   }
 
   // 8. 특정 포스트 삭제
@@ -229,8 +226,6 @@ export class PostsService {
 
     await this.postRepo.remove(existingPost);
 
-    return new SuccessResponseDto(
-      DeletePostResponseDto.fromEntity(existingPost),
-    );
+    return DeletePostResponseDto.fromEntity(existingPost);
   }
 }

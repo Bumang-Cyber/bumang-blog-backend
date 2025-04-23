@@ -13,7 +13,6 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
 import { GroupedMenuTreeResponseDto } from './dto/grouped-menu-tree.dto';
 
 @Injectable()
@@ -307,8 +306,6 @@ export class CategoriesService {
       relations: ['categories'],
     });
 
-    return new SuccessResponseDto(
-      groups.map(GroupedMenuTreeResponseDto.fromEntity),
-    );
+    return groups.map(GroupedMenuTreeResponseDto.fromEntity);
   }
 }

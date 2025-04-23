@@ -9,7 +9,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TagsEntity } from './entities/tag.entity';
 import { GroupEntity } from 'src/categories/entities/group.entity';
-import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
 import { CommonTagResponseDto } from './dto/common-tag-response.dto';
 
 @Injectable()
@@ -47,7 +46,7 @@ export class TagsService {
       group: existingGroup,
     });
 
-    return new SuccessResponseDto(tag);
+    return tag;
   }
 
   // 2. 모든 태그 조회
@@ -56,9 +55,7 @@ export class TagsService {
       order: { id: 'ASC' },
     });
 
-    const tag = tags.map(CommonTagResponseDto.fromEntity);
-
-    return new SuccessResponseDto(tag);
+    return tags.map(CommonTagResponseDto.fromEntity);
   }
 
   // 3. 태그 하나 조회
@@ -72,7 +69,7 @@ export class TagsService {
       throw new NotFoundException(`Tag with ID ${id} not found`);
     }
 
-    return new SuccessResponseDto(CommonTagResponseDto.fromEntity(tag));
+    return CommonTagResponseDto.fromEntity(tag);
   }
 
   // 4. 태그 업데이트
@@ -102,7 +99,7 @@ export class TagsService {
       ...updateTagDto,
     });
 
-    return new SuccessResponseDto(CommonTagResponseDto.fromEntity(tag));
+    return CommonTagResponseDto.fromEntity(tag);
   }
 
   // 5. 태그 삭제
