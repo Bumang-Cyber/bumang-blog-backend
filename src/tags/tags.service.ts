@@ -9,6 +9,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TagsEntity } from './entities/tag.entity';
 import { GroupEntity } from 'src/categories/entities/group.entity';
+import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
+import { CommonTagResponseDto } from './dto/common-tag-response.dto';
 
 @Injectable()
 export class TagsService {
@@ -40,10 +42,12 @@ export class TagsService {
       throw new NotFoundException(`Group with ID: ${groupId} does not exist`);
     }
 
-    return await this.tagRepo.save({
+    const tag = await this.tagRepo.save({
       title,
       group: existingGroup,
     });
+
+    return new SuccessResponseDto(tag);
   }
 
   // 2. 모든 태그 조회
@@ -52,27 +56,30 @@ export class TagsService {
       order: { id: 'ASC' },
     });
 
-    return tags;
+    const tag = tags.map(CommonTagResponseDto.fromEntity);
+
+    return new SuccessResponseDto(tag);
   }
 
   // 3. 태그 하나 조회
   async findOneTag(id: number) {
     const tag = await this.tagRepo.findOne({
       where: { id },
-      relations: ['posts'],
+      relations: ['posts', 'group'],
     });
 
     if (!tag) {
       throw new NotFoundException(`Tag with ID ${id} not found`);
     }
 
-    return tag;
+    return new SuccessResponseDto(CommonTagResponseDto.fromEntity(tag));
   }
 
   // 4. 태그 업데이트
   async updateOneTag(id: number, updateTagDto: UpdateTagDto) {
     const tag = await this.tagRepo.findOne({
       where: { id },
+      relations: ['group'],
     });
 
     if (!tag) {
@@ -90,10 +97,12 @@ export class TagsService {
       }
     }
 
-    return await this.tagRepo.save({
+    await this.tagRepo.save({
       id,
       ...updateTagDto,
     });
+
+    return new SuccessResponseDto(CommonTagResponseDto.fromEntity(tag));
   }
 
   // 5. 태그 삭제
