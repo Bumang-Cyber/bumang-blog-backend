@@ -31,10 +31,17 @@ export class GroupedMenuTreeResponseDto {
   @ApiProperty()
   categories: CategoryResponseDto[];
 
-  static fromEntity(group: GroupEntity): GroupedMenuTreeResponseDto {
+  @ApiProperty()
+  totalPostsCount: number;
+
+  static fromEntity(
+    group: GroupEntity,
+    totalPostsCount = 0,
+  ): GroupedMenuTreeResponseDto {
     const dto = new GroupedMenuTreeResponseDto();
     dto.id = group.id;
     dto.label = group.label;
+    dto.totalPostsCount = totalPostsCount;
     dto.categories =
       group.categories
         ?.slice()

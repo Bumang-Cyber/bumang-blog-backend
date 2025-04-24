@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { CategoryEntity } from './entities/category.entity';
@@ -14,6 +14,7 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { GroupedMenuTreeResponseDto } from './dto/grouped-menu-tree.dto';
+import { PostEntity } from 'src/posts/entities/post.entity';
 
 @Injectable()
 export class CategoriesService {
@@ -23,6 +24,9 @@ export class CategoriesService {
 
     @InjectRepository(GroupEntity)
     private readonly groupRepo: Repository<GroupEntity>,
+
+    @InjectRepository(PostEntity)
+    private readonly postRepo: Repository<PostEntity>,
   ) {}
 
   /**
@@ -306,6 +310,20 @@ export class CategoriesService {
       relations: ['categories'],
     });
 
-    return groups.map(GroupedMenuTreeResponseDto.fromEntity);
+    // 병렬로 비동기 작업 실행 후 한 번에 기다림
+    return await Promise.all(
+      groups.map(async (group) => {
+        const categoryIds = group.categories.map((c) => c.id);
+
+        const totalPostsCount = await this.postRepo.count({
+          where: {
+            category: { id: In(categoryIds) },
+          },
+        });
+
+        // GroupedMenuTreeResponseDto
+        return GroupedMenuTreeResponseDto.fromEntity(group, totalPostsCount);
+      }),
+    );
   }
 }
