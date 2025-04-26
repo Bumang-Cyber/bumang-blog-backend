@@ -1,10 +1,12 @@
 import {
   IsArray,
+  IsEnum,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { RolesEnum } from 'src/users/const/roles.const';
 
 export class CreatePostDto {
   @IsString()
@@ -24,4 +26,7 @@ export class CreatePostDto {
   @IsArray()
   @IsNumber({}, { each: true })
   tagIds: number[];
+
+  @IsEnum(RolesEnum)
+  readPermission: RolesEnum;
 }

@@ -32,6 +32,8 @@ import {
 import { PostListItemResponseDto } from './dto/post-list-item-response.dto';
 import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 import { CreatePostResponseDto } from './dto/create-post-response.dto';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 
 @ApiBearerAuth()
 @ApiTags('Posts') // Swagger UI 그룹 이름
@@ -99,6 +101,7 @@ export class PostsController {
         categoryId: parsedCategoryId,
         tagIds: parsedTagIds,
       },
+      // role,
     );
   }
 
@@ -119,8 +122,11 @@ export class PostsController {
     summary: '게시글 상세 조회',
     description: '특정 게시글을 상세 조회합니다.',
   })
-  async findPostDetail(@Param('id', ParseIntPipe) id: number) {
-    return await this.postsService.findPostDetail(id);
+  async findPostDetail(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user?: CurrentUserDto,
+  ) {
+    return await this.postsService.findPostDetail(id, user || null);
   }
 
   @UseGuards(JwtAuthGuard, IsOwnerGuard)
@@ -133,8 +139,9 @@ export class PostsController {
   async updatePost(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePostDto: UpdatePostDto,
+    @CurrentUser() user?: CurrentUserDto,
   ) {
-    return await this.postsService.updatePost(id, updatePostDto);
+    return await this.postsService.updatePost(id, updatePostDto, user || null);
   }
 
   @UseGuards(JwtAuthGuard, IsOwnerGuard)

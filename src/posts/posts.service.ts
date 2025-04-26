@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -17,6 +18,9 @@ import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 import { CreatePostResponseDto } from './dto/create-post-response.dto';
 import { UpdatePostResponseDto } from './dto/update-post-response.dto';
 import { DeletePostResponseDto } from './dto/delete-post-response.dto';
+import { canReadPost } from './util/canReadPost';
+import { CurrentUserDto } from 'src/common/dto/current-user.dto';
+import { canCreateOrUpdatePost } from './util/canCreateOrUpdatePost';
 
 @Injectable()
 export class PostsService {
@@ -46,6 +50,7 @@ export class PostsService {
       categoryId?: number;
       tagIds?: number[];
     },
+    // role: RolesEnum,
   ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const { groupId, categoryId, tagIds } = filter;
 
@@ -81,7 +86,8 @@ export class PostsService {
   async createPost(
     createPostDto: CreatePostDto,
   ): Promise<CreatePostResponseDto> {
-    const { title, content, authorId, categoryId, tagIds } = createPostDto;
+    const { title, content, authorId, categoryId, tagIds, readPermission } =
+      createPostDto;
 
     const existingAuthor = await this.userRepo.findOne({
       where: { id: authorId },
@@ -123,6 +129,7 @@ export class PostsService {
       title,
       content,
       previewText,
+      readPermission,
       author: existingAuthor,
       category: existingCategory,
       tags: validTags,
@@ -135,7 +142,7 @@ export class PostsService {
   }
 
   // 6. 특정 포스트 상세 조회
-  async findPostDetail(id: number) {
+  async findPostDetail(id: number, currentUser: CurrentUserDto | null) {
     const post = await this.postRepo.findOne({
       where: { id },
       relations: ['category', 'comments', 'tags', 'category.group', 'author'],
@@ -146,6 +153,14 @@ export class PostsService {
       throw new NotFoundException('Post were not found');
     }
 
+    const userRole = currentUser?.role || null;
+    if (!canReadPost(post.readPermission, userRole)) {
+      //
+      throw new ForbiddenException(
+        'You do not have permission to view this post.',
+      );
+    }
+
     return post;
   }
 
@@ -153,8 +168,9 @@ export class PostsService {
   async updatePost(
     id: number,
     dto: UpdatePostDto,
+    currentUser: CurrentUserDto | null,
   ): Promise<UpdatePostResponseDto> {
-    const { title, content, categoryId, tagIds } = dto;
+    const { title, content, categoryId, tagIds, readPermission } = dto;
 
     // 아이디로 조회
     const existingPost = await this.postRepo.findOne({
@@ -164,6 +180,13 @@ export class PostsService {
 
     if (!existingPost) {
       throw new NotFoundException();
+    }
+
+    const userRole = currentUser?.role || null;
+    if (!canCreateOrUpdatePost(existingPost.readPermission, userRole)) {
+      throw new ForbiddenException(
+        'You do not have permission to update this post.',
+      );
     }
 
     if (typeof title !== 'string' || title === '') {
@@ -208,6 +231,10 @@ export class PostsService {
     }
 
     existingPost.tags = validTags;
+
+    if (readPermission !== undefined) {
+      existingPost.readPermission = readPermission;
+    }
 
     await this.postRepo.save(existingPost);
 

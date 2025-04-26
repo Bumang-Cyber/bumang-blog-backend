@@ -44,7 +44,7 @@ export class PostEntity {
     enum: RolesEnum,
     nullable: true,
   })
-  readPermission: RolesEnum;
+  readPermission: RolesEnum | null;
 
   @ManyToOne(() => CategoryEntity, (category) => category.posts, {
     onDelete: 'SET NULL', // ✅ 이쪽에 넣어야 DB에서 제대로 동작
