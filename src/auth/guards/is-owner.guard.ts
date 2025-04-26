@@ -11,6 +11,7 @@ import { PostsService } from 'src/posts/posts.service';
 import { CommentsService } from 'src/comments/comments.service';
 // import { UsersModule } from 'src/users/users.module';
 import { RolesEnum } from 'src/users/const/roles.const';
+import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 
 // 1. 포스트 모듈 (v)
 // 2. 카테고리 모듈
@@ -47,7 +48,7 @@ export class IsOwnerGuard implements CanActivate {
       throw new ForbiddenException('You do not have permission.');
     }
 
-    const isOwner = await this.checkOwnership(resourceId, user.userId, type);
+    const isOwner = await this.checkOwnership(resourceId, user, type);
 
     if (!isOwner) {
       throw new ForbiddenException('Only the owner can modify or delete this.');
@@ -59,20 +60,20 @@ export class IsOwnerGuard implements CanActivate {
   // ✅ 이 부분은 DI로 repository 또는 service 받아서 로직 구현 가능
   async checkOwnership(
     resourceId: number,
-    userId: number,
+    user: CurrentUserDto,
     type: string,
   ): Promise<boolean> {
     switch (type) {
       case 'post': {
-        const post = await this.postsService.findPostDetail(resourceId);
-        return post?.author?.id === userId;
+        const post = await this.postsService.findPostDetail(resourceId, user);
+        return post?.author?.id === user.userId;
       }
       case 'comment': {
         const comment = await this.commentsService.findOneComment(resourceId);
-        return comment?.author?.id === userId;
+        return comment?.author?.id === user.userId;
       }
       case 'user': {
-        return resourceId === userId;
+        return resourceId === user.userId;
       }
       default:
         return false;

@@ -50,7 +50,6 @@ export class PostsService {
       categoryId?: number;
       tagIds?: number[];
     },
-    // role: RolesEnum,
   ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const { groupId, categoryId, tagIds } = filter;
 
