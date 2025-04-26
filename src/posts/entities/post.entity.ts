@@ -1,6 +1,7 @@
 import { CategoryEntity } from 'src/categories/entities/category.entity';
 import { CommentEntity } from 'src/comments/entities/comment.entity';
 import { TagsEntity } from 'src/tags/entities/tag.entity';
+import { RolesEnum } from 'src/users/const/roles.const';
 import { UserEntity } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -37,6 +38,13 @@ export class PostEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.posts)
   author: UserEntity;
+
+  @Column({
+    type: 'enum',
+    enum: RolesEnum,
+    nullable: true,
+  })
+  readPermission: RolesEnum;
 
   @ManyToOne(() => CategoryEntity, (category) => category.posts, {
     onDelete: 'SET NULL', // ✅ 이쪽에 넣어야 DB에서 제대로 동작

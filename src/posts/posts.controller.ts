@@ -42,7 +42,7 @@ export class PostsController {
   @Get('test')
   @ApiExcludeEndpoint() // 스웨거에 제외
   findAll() {
-    return [{ id: 1, title: '테스트3' }];
+    return [{ id: 1, title: '0426 05:28PM' }];
   }
 
   @Get()
