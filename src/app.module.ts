@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { TagsModule } from './tags/tags.module';
 import { S3Module } from './s3/s3.module';
+import { AppDataSource } from './data-source';
 
 @Module({
   imports: [
@@ -19,16 +20,7 @@ import { S3Module } from './s3/s3.module';
       envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
-      entities: [__dirname + '/**/*.entity.{ts,js}'],
-      // nest.js의 typeorm 코드와 실제 db환경을 연동할 것인가?
-      synchronize: process.env.NODE_ENV === 'development',
-      // synchronize: false
+      ...AppDataSource.options,
     }),
     UsersModule,
     PostsModule,
