@@ -6,7 +6,7 @@ export class AddReadPermissionToPost20250428123000
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE "post_entity"
-      ADD COLUMN "read_permission" "roles_enum" NULL
+      ADD COLUMN "read_permission" character varying NULL
     `);
   }
 
