@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddReadPermissionToPost20250428 implements MigrationInterface {
+export class AddReadPermissionToPost20250428123000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE "post"
