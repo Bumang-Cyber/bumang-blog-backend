@@ -46,7 +46,7 @@ export class TagsService {
       group: existingGroup,
     });
 
-    return tag;
+    return CommonTagResponseDto.fromEntity(tag);
   }
 
   // 2. 모든 태그 조회
