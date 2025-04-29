@@ -49,7 +49,7 @@ export class AuthService {
   async login(dto: LoginAuthDto) {
     const { email, password } = dto;
 
-    const user = await this.usersService.findOneUserByEmail(email);
+    const user = await this.usersService.validateOneUserPasswordByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid Email or Password');
     }
@@ -82,7 +82,7 @@ export class AuthService {
 
   // 🟡 access Token 재발급
   async renewAccessToken(userId: number) {
-    const user = await this.usersService.findOneUserById(userId);
+    const user = await this.usersService.validateOneUserById(userId);
     if (!user.refreshToken) {
       throw new UnauthorizedException('Invalid Refresh token');
     }

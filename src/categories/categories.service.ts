@@ -304,6 +304,7 @@ export class CategoriesService {
     await this.categoryRepo.remove(category); // 따로 응답을 내려주지 않음 (204)
   }
 
+  // 메뉴트리 조회
   async findGroupedCategoryTree() {
     const groups = await this.groupRepo.find({
       order: { order: 'ASC' },
