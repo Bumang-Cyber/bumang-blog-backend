@@ -23,6 +23,7 @@ import { IsOwner } from 'src/auth/decorators/is-owner.decorator';
 import { IsOwnerGuard } from 'src/auth/guards/is-owner.guard';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiExcludeEndpoint,
   ApiOperation,
@@ -112,8 +113,11 @@ export class PostsController {
     summary: '게시글 생성',
     description: 'DB에 게시글을 저장합니다.',
   })
-  @ApiCreatedResponse({ type: CreatePostResponseDto })
-  async createPost(@Body() createPostDto: CreatePostDto) {
+  @ApiBody({ type: CreatePostDto }) // 요청 바디 스웨거 문서
+  @ApiCreatedResponse({ type: CreatePostResponseDto }) // 201 Created용 스웨거 데코레이터
+  async createPost(
+    @Body() createPostDto: CreatePostDto,
+  ): Promise<CreatePostResponseDto> {
     return await this.postsService.createPost(createPostDto);
   }
 
