@@ -21,7 +21,7 @@ import { DeletePostResponseDto } from './dto/delete-post-response.dto';
 import { canReadPost } from './util/canReadPost';
 import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 import { canCreateOrUpdatePost } from './util/canCreateOrUpdatePost';
-import { PostDetailResponseDto } from './dto/post-detail-response.dto';
+// import { PostDetailResponseDto } from './dto/post-detail-response.dto';
 
 @Injectable()
 export class PostsService {
@@ -161,7 +161,8 @@ export class PostsService {
       );
     }
 
-    return PostDetailResponseDto.fromEntity(post);
+    return post;
+    // return PostDetailResponseDto.fromEntity(post);
   }
 
   // 7. 특정 포스트 수정
