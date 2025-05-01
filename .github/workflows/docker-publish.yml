@@ -46,4 +46,4 @@ jobs:
             sleep 5
 
             echo "🚀 Nest 앱 상태 확인 중..."
-            curl -f http://localhost:3000/health || exit 1
+            curl -f http://localhost:3000/ || exit 1
