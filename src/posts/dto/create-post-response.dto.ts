@@ -15,8 +15,9 @@ export class CreatePostResponseDto {
   @ApiProperty({
     example: 'user',
     enum: RolesEnum,
+    nullable: true,
   })
-  readPermission: RolesEnum;
+  readPermission: RolesEnum | null;
 
   static fromEntity(post: PostEntity): CreatePostResponseDto {
     const dto = new CreatePostResponseDto();

@@ -30,6 +30,7 @@ export class PostListItemResponseDto {
   @ApiProperty({
     example: 'user',
     enum: RolesEnum,
+    nullable: true,
   })
   readPermisson: RolesEnum;
 

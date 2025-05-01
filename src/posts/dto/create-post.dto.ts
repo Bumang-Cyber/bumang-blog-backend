@@ -27,6 +27,7 @@ export class CreatePostDto {
   @IsNumber({}, { each: true })
   tagIds: number[];
 
+  @IsOptional()
   @IsEnum(RolesEnum)
-  readPermission: RolesEnum;
+  readPermission: RolesEnum | null;
 }
