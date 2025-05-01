@@ -52,40 +52,62 @@ export class PostDetailResponseDto {
   readPermission: RolesEnum | null;
 
   @ApiProperty()
-  view: number;
+  views: number;
 
   @ApiProperty()
   likes: number;
 
-  @ApiProperty()
-  isLiked: boolean; // ← 선택적으로 포함
+  // @ApiProperty()
+  // isLiked: boolean; // ← 선택적으로 포함
 
   @ApiProperty({
     type: () => CategorySimplifiedResponse,
+    nullable: true,
   })
-  category: {
-    id: number;
-
-    label: string;
-  };
+  category: CategorySimplifiedResponse;
 
   @ApiProperty({
     type: () => GroupSimplifiedResponse,
+    nullable: true,
   })
-  group: {
-    id: number;
-
-    label: string;
-  };
+  group: GroupSimplifiedResponse;
 
   @ApiProperty({
-    type: () => [GroupSimplifiedResponse],
+    type: () => [TagSimplifiedResponse],
   })
-  tags: { id: number; label: string }[];
+  tags: TagSimplifiedResponse[];
 
   static fromEntity(post: PostEntity): PostDetailResponseDto {
     const dto = new PostDetailResponseDto();
     dto.id = post.id;
+    dto.title = post.title;
+    dto.content = post.content;
+    dto.previewText = post.previewText;
+
+    dto.createdAt = post.createdAt;
+    dto.updatedAt = post.updatedAt;
+
+    dto.authorNickname = post.author?.nickname ?? 'unknown';
+    dto.readPermission = post.readPermission;
+
+    dto.views = post.view;
+    dto.likes = post.likes;
+
+    dto.category = post.category
+      ? {
+          id: post.category.id,
+          label: post.category.label,
+        }
+      : null;
+
+    dto.group = post.category.group
+      ? {
+          id: post.category.group.id,
+          label: post.category.group.label,
+        }
+      : null;
+
+    dto.tags = [...post.tags.map((tag) => ({ id: tag.id, label: tag.title }))];
 
     return dto;
   }

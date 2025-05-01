@@ -65,7 +65,10 @@ export class IsOwnerGuard implements CanActivate {
   ): Promise<boolean> {
     switch (type) {
       case 'post': {
-        const post = await this.postsService.findPostDetail(resourceId, user);
+        const post = await this.postsService.findPostDetailRaw(
+          resourceId,
+          user,
+        );
         return post?.author?.id === user.userId;
       }
       case 'comment': {

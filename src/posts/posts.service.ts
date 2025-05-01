@@ -21,7 +21,7 @@ import { DeletePostResponseDto } from './dto/delete-post-response.dto';
 import { canReadPost } from './util/canReadPost';
 import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 import { canCreateOrUpdatePost } from './util/canCreateOrUpdatePost';
-// import { PostDetailResponseDto } from './dto/post-detail-response.dto';
+import { PostDetailResponseDto } from './dto/post-detail-response.dto';
 
 @Injectable()
 export class PostsService {
@@ -161,8 +161,30 @@ export class PostsService {
       );
     }
 
+    return PostDetailResponseDto.fromEntity(post);
+  }
+
+  // 6. 특정 포스트 상세 조회
+  async findPostDetailRaw(id: number, currentUser: CurrentUserDto | null) {
+    const post = await this.postRepo.findOne({
+      where: { id },
+      relations: ['category', 'comments', 'tags', 'category.group', 'author'],
+      order: { id: 'DESC' },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post were not found');
+    }
+
+    const userRole = currentUser?.role || null;
+    if (!canReadPost(post.readPermission, userRole)) {
+      //
+      throw new ForbiddenException(
+        'You do not have permission to view this post.',
+      );
+    }
+
     return post;
-    // return PostDetailResponseDto.fromEntity(post);
   }
 
   // 7. 특정 포스트 수정
