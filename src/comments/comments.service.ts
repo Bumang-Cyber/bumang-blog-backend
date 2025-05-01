@@ -93,9 +93,6 @@ export class CommentsService {
       where: { id },
     });
 
-    // 권한 체크
-    // if ()
-
     if (!comment) {
       throw new NotFoundException(`Comment with ID ${id} does not exist.`);
     }

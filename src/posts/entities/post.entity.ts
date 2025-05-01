@@ -59,4 +59,10 @@ export class PostEntity {
   @ManyToMany(() => TagsEntity, (tag) => tag.posts, { cascade: true })
   @JoinTable()
   tags: TagsEntity[];
+
+  @Column({ default: 0 })
+  likes: number;
+
+  @Column({ default: 0 })
+  view: number;
 }

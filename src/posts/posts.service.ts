@@ -21,6 +21,7 @@ import { DeletePostResponseDto } from './dto/delete-post-response.dto';
 import { canReadPost } from './util/canReadPost';
 import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 import { canCreateOrUpdatePost } from './util/canCreateOrUpdatePost';
+import { PostDetailResponseDto } from './dto/post-detail-response.dto';
 
 @Injectable()
 export class PostsService {
@@ -160,7 +161,7 @@ export class PostsService {
       );
     }
 
-    return post;
+    return PostDetailResponseDto.fromEntity(post);
   }
 
   // 7. 특정 포스트 수정
@@ -253,5 +254,10 @@ export class PostsService {
     await this.postRepo.remove(existingPost);
 
     return DeletePostResponseDto.fromEntity(existingPost);
+  }
+
+  // 9. 관련 포스트 조회
+  async findRelatedPosts() {
+    return;
   }
 }

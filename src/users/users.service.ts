@@ -4,13 +4,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
+
 import { UserEntity } from './entities/user.entity';
+import { PostEntity } from 'src/posts/entities/post.entity';
+import { CommentEntity } from 'src/comments/entities/comment.entity';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDetailResponseDto } from './dto/user-detail-response.dto';
-import { PostEntity } from 'src/posts/entities/post.entity';
-import { CommentEntity } from 'src/comments/entities/comment.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
