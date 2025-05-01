@@ -41,3 +41,9 @@ jobs:
             cd /home/ec2-user/bumang-blog-backend
             docker-compose -f docker-compose.prod.yaml pull app
             docker-compose -f docker-compose.prod.yaml up -d --no-deps --build app
+
+            echo "⏳ 앱이 올라올 때까지 대기..."
+            sleep 5
+
+            echo "🚀 Nest 앱 상태 확인 중..."
+            curl -f http://localhost:3000/health || exit 1
