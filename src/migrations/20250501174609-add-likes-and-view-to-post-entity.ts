@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddLikesAndViewToPostEntity1680000000000
+export class AddLikesAndViewToPostEntity20250501174609
   implements MigrationInterface
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
