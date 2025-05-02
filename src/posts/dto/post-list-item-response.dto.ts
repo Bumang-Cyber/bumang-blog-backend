@@ -3,10 +3,10 @@ import { PostEntity } from '../entities/post.entity';
 import { RolesEnum } from 'src/users/const/roles.const';
 
 export class PostListItemResponseDto {
-  @ApiProperty()
+  @ApiProperty({ example: 0 })
   id: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: '제목: 프로젝트 후기' })
   title: string;
 
   @ApiProperty()
@@ -34,7 +34,12 @@ export class PostListItemResponseDto {
   })
   readPermisson: RolesEnum;
 
-  static fromEntity(post: PostEntity): PostListItemResponseDto {
+  @ApiProperty({ required: false, example: '0' })
+  score?: number;
+
+  static fromEntity(
+    post: PostEntity & { score?: number },
+  ): PostListItemResponseDto {
     const dto = new PostListItemResponseDto();
     dto.id = post.id;
     dto.title = post.title;
@@ -45,6 +50,7 @@ export class PostListItemResponseDto {
     dto.tags = post.tags?.map((tag) => tag.title) ?? [];
     dto.author = post.author?.nickname ?? 'unknown';
     dto.readPermisson = post.readPermission;
+
     return dto;
   }
 }

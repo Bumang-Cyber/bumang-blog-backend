@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { PostEntity } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -164,7 +164,7 @@ export class PostsService {
     return PostDetailResponseDto.fromEntity(post);
   }
 
-  // 6. 특정 포스트 상세 조회
+  // 6. (내부용RAW) 특정 포스트 상세 조회
   async findPostDetailRaw(id: number, currentUser: CurrentUserDto | null) {
     const post = await this.postRepo.findOne({
       where: { id },
@@ -280,7 +280,129 @@ export class PostsService {
   }
 
   // 9. 관련 포스트 조회
-  async findRelatedPosts() {
-    return;
+  // async findRelatedPosts(postId: number): Promise<PostListItemResponseDto[]> {
+  //   const targetPost = await this.postRepo.findOne({
+  //     where: { id: postId },
+  //     relations: ['tags', 'category', 'category.group'], // 태그, 카테고리, 그룹 가져오기
+  //   });
+
+  //   // 아이디 추출
+  //   const tagIds = targetPost.tags.map((tag) => tag.id);
+  //   const categoryId = targetPost.category.id;
+  //   const groupId = targetPost.category.group.id;
+
+  //   // 결과를 가져올 배열 생성
+  //   const result: PostEntity[] = [];
+
+  //   // 1. 같은 태그
+  //   // 테이블 설정 -> join -> where -> take -> get...
+  //   if (tagIds.length) {
+  //     const postsByTag = await this.postRepo
+  //       .createQueryBuilder('post') // post 테이블 기준으로 쿼리 빌드 시작
+  //       .leftJoin('post.tags', 'tag') // post.tags와 LEFT JOIN (다대다 관계), 연결된 tag의 정보를 참조 가능한 상태로 만든다.
+  //       .where('tag.id IN (:...tagIds)', { tagIds }) // 현재 포스트의 태그 ID 중 하나라도 포함된 포스트, :가 붙으면 모두 변수로 생각하기
+  //       .andWhere('post.id != :id', { id: postId }) // 자기 자신은 제외 (중복 방지), &&를 안 쓰고 나눠서 조건주기 위해서 andWhere 사용
+  //       .take(3) // 최대 3개만 가져오기
+  //       .getMany(); // 실제 데이터 가져오기
+
+  //     result.push(...postsByTag);
+  //   }
+
+  //   if (result.length < 3) {
+  //     const postsByCategory = await this.postRepo.find({
+  //       where: {
+  //         category: { id: categoryId },
+  //         id: Not(postId), // 자기자신 제외
+  //       },
+  //       take: 3 - result.length,
+  //     });
+
+  //     result.push(...postsByCategory);
+  //   }
+
+  //   // post → category → group 까지 관계 traversal 필요 => 쿼리빌더로 처리하는게 성능 좋음
+  //   // 테이블 설정 -> join -> where -> take -> get...
+  //   if (result.length < 3) {
+  //     const postsByGroup = await this.postRepo
+  //       .createQueryBuilder('post') // post 테이블 기준으로 쿼리 빌드
+  //       .leftJoin('post.category', 'category') // post.category와 LEFT JOIN, category를 참조 가능하도록 불러온다.
+  //       .leftJoin('category.group', 'group') // category.group과 다시 LEFT JOIN, group을 참조 가능하도록 불러온다.
+  //       .where('group.id = :groupId', { groupId }) // 기준 포스트와 같은 그룹 ID를 가진 글만 대상
+  //       .andWhere('post.id != :id', { id: postId }) // 자기 자신은 제외
+  //       .take(3 - result.length) // 남은 개수만큼만 가져오기
+  //       .getMany(); // 실제 포스트 리스트 가져오기
+
+  //     result.push(...postsByGroup);
+  //   }
+
+  //   return result.slice(0, 3).map(PostListItemResponseDto.fromEntity); // 혹시라도 중복방지
+  // }
+
+  async findRelatedPosts(postId: number): Promise<PostListItemResponseDto[]> {
+    const targetPost = await this.postRepo.findOne({
+      where: { id: postId },
+      relations: ['tags', 'category', 'category.group'],
+    });
+
+    const tagIds = targetPost.tags.map((tag) => tag.id);
+    const categoryId = targetPost.category.id;
+    const groupId = targetPost.category.group.id;
+
+    const query = this.postRepo
+      .createQueryBuilder('post')
+      .leftJoin('post.tags', 'tag')
+      .leftJoin('post.category', 'category')
+      .leftJoin('category.group', 'group')
+      .where('post.id != :id', { id: postId }) // 자기 제외
+      .andWhere('post.readPermission IS NULL') // 🔒 퍼블릭 제한 등 조건 넣어도 됨. => readPermission null인 것만 OK!
+      .select('post.id', 'id') // id라는 컬럼으로 post.id 가져옴
+      .addSelect('post.title', 'title') // title이라는 컬럼으로 post.title 가져옴
+      .addSelect('post.previewText', 'previewText') // previewText이라는 컬럼으로 post.previewText 가져옴
+      .addSelect('post.createdAt', 'createdAt')
+      .addSelect('category.label', 'categoryLabel') // 이미 leftJoin했으니 가능
+      .addSelect('group.label', 'groupLabel') // 이미 leftJoin했으니 가능
+      .addSelect('post.author', 'author')
+      .addSelect('post.readPermission', 'readPermission')
+      .addSelect(
+        // 유사도 점수 계산: 태그 겹친 수 * 10 + 카테고리 일치 시 5점 + 그룹 일치 시 1점
+        `
+        COUNT(DISTINCT tag.id) * 10 +
+        CASE WHEN category.id = :categoryId THEN 5 ELSE 0 END +
+        CASE WHEN group.id = :groupId THEN 1 ELSE 0 END
+        `, // DISTINCT는 중복을 허용하지 않는다는 뜻.
+        'score',
+      )
+      .groupBy('post.id')
+      .addGroupBy('category.id')
+      .addGroupBy('group.id')
+      .orderBy('score', 'DESC')
+      .limit(3)
+      .setParameters({ categoryId, groupId, tagIds });
+
+    const relatedPosts = await query.getRawMany();
+
+    return relatedPosts
+      .sort((a, b) => b.score - a.score)
+      .map((post) => ({ ...post, score: Number(post.score) }));
+  }
+
+  async postLikes(postId: number) {
+    // 존재 여부 확인
+    const existPost = await this.postRepo.exist({ where: { id: postId } });
+
+    if (!existPost) {
+      throw new NotFoundException(`Post with ID ${postId} does not exist`);
+    }
+
+    // PostgreSQL에서 직접 증가 (동시성 안전)
+    const result = await this.postRepo
+      .createQueryBuilder()
+      .update()
+      .set({ likes: () => '"likes" + 1' }) // ← 꼭 따옴표 필요: "likes"는 컬럼명. 원자성을 가지는 태스크
+      .where('id = :id', { id: postId })
+      .returning('likes') // PostgreSQL에서 현재 값 반환
+      .execute();
+
+    return { id: postId, likes: result.raw[0].likes };
   }
 }

@@ -106,6 +106,17 @@ export class PostsController {
     );
   }
 
+  @Get(':id/related')
+  @ApiOperation({
+    summary: '관련된 포스트 조회',
+    description: '특정 게시물에 관련된 포스트를 세 개 조회합니다.',
+  })
+  async findRelatedPosts(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<PostListItemResponseDto[]> {
+    return await this.postsService.findRelatedPosts(id);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN, RolesEnum.USER)
@@ -158,5 +169,14 @@ export class PostsController {
   })
   async removeOnePost(@Param('id', ParseIntPipe) id: number) {
     return await this.postsService.deletePost(id);
+  }
+
+  @Post(':id/likes')
+  @ApiOperation({
+    summary: '좋아요 추가',
+    description: '특정 게시물의 좋아요를 추가합니다.',
+  })
+  async postLikes(@Param('id', ParseIntPipe) id: number) {
+    return await this.postsService.postLikes(id);
   }
 }

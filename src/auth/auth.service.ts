@@ -33,13 +33,11 @@ export class AuthService {
       throw new ConflictException('User with this Nickname already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await this.usersService.createUser({
       email,
       nickname,
       role: RolesEnum.USER,
-      password: hashedPassword,
+      password,
     });
 
     return { message: 'Sign-up successfully completed.', userId: newUser.id };
@@ -55,6 +53,7 @@ export class AuthService {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       throw new UnauthorizedException('Invalid Email or Password');
     }
