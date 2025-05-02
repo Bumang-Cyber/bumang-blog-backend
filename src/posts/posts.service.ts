@@ -386,11 +386,11 @@ export class PostsService {
       .map((post) => ({ ...post, score: Number(post.score) }));
   }
 
-  async postLikes(postId: number) {
+  async addLikes(postId: number) {
     // 존재 여부 확인
-    const existPost = await this.postRepo.exist({ where: { id: postId } });
+    const existingPost = await this.postRepo.findOne({ where: { id: postId } });
 
-    if (!existPost) {
+    if (!existingPost) {
       throw new NotFoundException(`Post with ID ${postId} does not exist`);
     }
 
@@ -398,11 +398,30 @@ export class PostsService {
     const result = await this.postRepo
       .createQueryBuilder()
       .update()
-      .set({ likes: () => '"likes" + 1' }) // ← 꼭 따옴표 필요: "likes"는 컬럼명. 원자성을 가지는 태스크
+      .set({ likes: () => 'likes + 1' }) // ← 꼭 따옴표 필요: "likes"는 컬럼명. 원자성을 가지는 태스크
       .where('id = :id', { id: postId })
       .returning('likes') // PostgreSQL에서 현재 값 반환
       .execute();
 
     return { id: postId, likes: result.raw[0].likes };
+  }
+
+  async addView(postId: number) {
+    const existingPost = await this.postRepo.findOne({ where: { id: postId } });
+
+    if (!existingPost) {
+      throw new NotFoundException(`Post with ID ${postId} does not exist`);
+    }
+
+    // PostgreSQL에서 직접 증가 (동시성 안전)
+    const result = await this.postRepo
+      .createQueryBuilder()
+      .update() // 업데이트문으로 전환
+      .set({ view: () => 'view + 1' }) // 업데이트할 컬럼과 업데이트 로직
+      .where('id = :id', { id: postId })
+      .returning('view') // 따로 select문을 쓰지 않아도 현재 값 반환. POSTGRESQL의 고유 문법
+      .execute();
+
+    return { id: postId, view: result.raw[0].view };
   }
 }

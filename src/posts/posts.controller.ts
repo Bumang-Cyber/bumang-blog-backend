@@ -176,7 +176,16 @@ export class PostsController {
     summary: '좋아요 추가',
     description: '특정 게시물의 좋아요를 추가합니다.',
   })
-  async postLikes(@Param('id', ParseIntPipe) id: number) {
-    return await this.postsService.postLikes(id);
+  async addLikes(@Param('id', ParseIntPipe) id: number) {
+    return await this.postsService.addLikes(id);
+  }
+
+  @Post(':id/view')
+  @ApiOperation({
+    summary: '조회수 추가',
+    description: '특정 게시물의 조회수를 추가합니다.',
+  })
+  async addView(@Param('id', ParseIntPipe) id: number) {
+    return await this.postsService.addView(id);
   }
 }
