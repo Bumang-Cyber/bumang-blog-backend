@@ -52,6 +52,7 @@ export class TagsService {
   // 2. 모든 태그 조회
   async findAllTag() {
     const tags = await this.tagRepo.find({
+      relations: ['group'],
       order: { id: 'ASC' },
     });
 
