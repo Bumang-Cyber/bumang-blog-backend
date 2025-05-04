@@ -9,6 +9,7 @@ import { SignupAuthDto } from './dto/signup-auth.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RolesEnum } from 'src/users/const/roles.const';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -73,10 +74,7 @@ export class AuthService {
     // Refresh Token DB에 저장
     await this.usersService.saveRefreshToken(user.id, refreshToken);
 
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return { accessToken };
   }
 
   // 🟡 access Token 재발급
