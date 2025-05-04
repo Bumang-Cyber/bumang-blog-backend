@@ -39,6 +39,7 @@ export class AuthController {
   ) {
     const { accessToken } = await this.authService.login(dto);
 
+    // accessToken 쿠키 설정
     res.cookie('access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -55,21 +56,45 @@ export class AuthController {
     summary: '로그아웃',
     description: '서비스에서 로그아웃합니다.',
   })
-  async logout(@Req() req: RequestWithUser) {
+  async logout(
+    @Req() req: RequestWithUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const user = req.user;
-    return await this.authService.logout(user.userId);
+    await this.authService.logout(user.userId);
+
+    // accessToken 쿠키 제거
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/', // ✅ 원래 설정한 path와 일치해야 삭제됨
+    });
   }
 
   // 🟡 access Token 재발급
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
-  @Post('logout')
+  @HttpCode(204)
   @ApiOperation({
     summary: '엑세스 토큰 갱신',
     description: '엑세스 토큰을 갱신하여 로그인을 지속시킵니다.',
   })
-  async renewAccessToken(@Req() req: RequestWithUser) {
+  async renewAccessToken(
+    @Req() req: RequestWithUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const user = req.user;
-    return await this.authService.renewAccessToken(user.userId);
+    const { accessToken } = await this.authService.renewAccessToken(
+      user.userId,
+    );
+
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // CSRF 보호
+      maxAge: 1000 * 60 * 15, // 15분
+      path: '/',
+    });
   }
 }
