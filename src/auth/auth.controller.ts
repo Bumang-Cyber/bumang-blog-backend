@@ -40,7 +40,7 @@ export class AuthController {
     const { accessToken } = await this.authService.login(dto);
 
     // accessToken 쿠키 설정
-    res.cookie('access_token', accessToken, {
+    res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax', // CSRF 보호
@@ -66,8 +66,10 @@ export class AuthController {
     // accessToken 쿠키 제거
     res.clearCookie('access_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      // secure: process.env.NODE_ENV === 'production',
+      secure: false,
+      // sameSite: 'lax',
+      sameSite: 'none',
       path: '/', // ✅ 원래 설정한 path와 일치해야 삭제됨
     });
   }
@@ -89,7 +91,7 @@ export class AuthController {
       user.userId,
     );
 
-    res.cookie('access_token', accessToken, {
+    res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax', // CSRF 보호

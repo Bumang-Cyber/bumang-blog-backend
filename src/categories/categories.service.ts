@@ -85,8 +85,6 @@ export class CategoriesService {
         take: 1,
       });
 
-      console.log(maxOrderGroup, 'maxOrderGroup');
-
       // 계층에서 가장 후순위 오더로 지정
       finalOrder = maxOrderGroup[0]?.order ? maxOrderGroup[0].order + 1 : 1;
     }
@@ -174,15 +172,12 @@ export class CategoriesService {
       order: { order: 'ASC' },
     });
 
-    console.log(categories, 'categories');
-
     return categories;
   }
 
   // 2. 단일 카테고리 추가
   async createOneCategory(dto: CreateCategoryDto): Promise<CategoryEntity> {
     const { label, order, groupId } = dto;
-    console.log(label, order, groupId, 'label, order, groupId');
     // 1. 해당 이름의 카테고리가 이미 있는지 체크
     const existingLabel = await this.categoryRepo.findOne({ where: { label } });
     if (existingLabel) {

@@ -15,6 +15,11 @@ async function bootstrap() {
     }),
   );
 
+  // app.use((req, res, next) => {
+  //   console.log('🔥 요청 수신됨:', req.method, req.url);
+  //   next();
+  // });
+
   // ✅ Swagger 설정
   const config = new DocumentBuilder()
     .setTitle('BUMANG BLOG API')
@@ -26,7 +31,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
 
-  app.enableCors();
+  app.enableCors({ origin: 'http://localhost:4000', credentials: true });
   await app.listen(process.env.APP_PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();
