@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   HttpCode,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -27,6 +28,9 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { RequestWithUser } from 'types/user-request.interface';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 
 @ApiBearerAuth()
 @ApiTags('Users') // Swagger UI에서 그룹 이름
@@ -56,6 +60,19 @@ export class UsersController {
     const user = await this.usersService.findOneUserById(id);
 
     return plainToInstance(UserEntity, user);
+  }
+
+  // 유저 한 명 찾기
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiOperation({
+    summary: '내 정보 조회',
+    description: '로그인한 유저 자신의 정보를 조회합니다.',
+  })
+  async findMyProfile(@CurrentUser() user?: CurrentUserDto) {
+    const userInfo = await this.usersService.findOneUserById(user.userId);
+
+    return plainToInstance(UserEntity, userInfo);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
