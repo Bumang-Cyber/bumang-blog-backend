@@ -64,7 +64,7 @@ export class AuthController {
     await this.authService.logout(user.userId);
 
     // accessToken 쿠키 제거
-    res.clearCookie('access_token', {
+    res.clearCookie('accessToken', {
       httpOnly: true,
       // secure: process.env.NODE_ENV === 'production',
       secure: false,
