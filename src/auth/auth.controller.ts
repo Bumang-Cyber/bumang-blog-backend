@@ -8,7 +8,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-// import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { SignupAuthDto } from './dto/signup-auth.dto';
@@ -16,6 +15,8 @@ import { RequestWithUser } from 'types/user-request.interface';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 
 @ApiBearerAuth()
 @ApiTags('Auth') // Swagger UI 그룹 이름
@@ -83,6 +84,7 @@ export class AuthController {
   }
 
   // 🟡 access Token 재발급
+  // @UseGuards(JwtAuthGuard)
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
   @HttpCode(204)
@@ -91,12 +93,10 @@ export class AuthController {
     description: '엑세스 토큰을 갱신하여 로그인을 지속시킵니다.',
   })
   async renewAccessToken(
-    @Req() req: RequestWithUser,
     @Res({ passthrough: true }) res: Response,
+    @CurrentUser() user?: CurrentUserDto,
   ) {
-    console.log('!!!!!!!!!!!!!!!!!!!!!');
-    console.log(0);
-    const user = req.user;
+    console.log('---PASS---');
     console.log(user, 'user');
     const { accessToken } = await this.authService.renewAccessToken(
       user.userId,

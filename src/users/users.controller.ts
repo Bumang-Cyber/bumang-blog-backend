@@ -9,7 +9,6 @@ import {
   ParseIntPipe,
   HttpCode,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -51,6 +50,20 @@ export class UsersController {
 
   // 유저 한 명 찾기
   @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiOperation({
+    summary: '내 정보 조회',
+    description: '로그인한 유저 자신의 정보를 조회합니다.',
+  })
+  async findMyProfile(@CurrentUser() user?: CurrentUserDto) {
+    console.log(user, 'user in me');
+    const userInfo = await this.usersService.findOneUserById(user.userId);
+
+    return plainToInstance(UserEntity, userInfo);
+  }
+
+  // 유저 한 명 찾기
+  @UseGuards(JwtAuthGuard)
   @Get(':id') // 200 OK
   @ApiOperation({
     summary: '특정 유저 조회',
@@ -60,19 +73,6 @@ export class UsersController {
     const user = await this.usersService.findOneUserById(id);
 
     return plainToInstance(UserEntity, user);
-  }
-
-  // 유저 한 명 찾기
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  @ApiOperation({
-    summary: '내 정보 조회',
-    description: '로그인한 유저 자신의 정보를 조회합니다.',
-  })
-  async findMyProfile(@CurrentUser() user?: CurrentUserDto) {
-    const userInfo = await this.usersService.findOneUserById(user.userId);
-
-    return plainToInstance(UserEntity, userInfo);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

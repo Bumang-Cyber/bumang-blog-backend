@@ -18,7 +18,7 @@ import { IsOwnerGuard } from './guards/is-owner.guard';
     forwardRef(() => UsersModule), // 순환참조 방지 지연 로딩
     forwardRef(() => PostsModule), // 순환참조 방지 지연 로딩
     forwardRef(() => CommentsModule), // 순환참조 방지 지연 로딩
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.JWT_EXPIRATION },

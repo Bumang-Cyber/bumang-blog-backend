@@ -19,6 +19,8 @@ async function bootstrap() {
 
   app.use((req, res, next) => {
     console.log('🔥 요청 수신됨:', req.method, req.url);
+    console.log('🔥 req.cookies: ', req.cookies);
+    // console.log('🔥 req.headers.cookie: ', req.headers.cookie);
     next();
   });
 

@@ -19,7 +19,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         // ✅ Authorization: Bearer ... 지원
         ExtractJwt.fromAuthHeaderAsBearerToken(),
         // ✅ httpOnly 쿠키 지원
-        (req: RequestWithCookies) => req?.cookies?.['accessToken'],
+        (req: RequestWithCookies) => {
+          console.log(
+            '🔥 Extracted accessToken:',
+            req?.cookies?.['accessToken'],
+          );
+          return req?.cookies?.['accessToken'];
+        },
       ]),
       secretOrKey: process.env.JWT_SECRET,
     });
