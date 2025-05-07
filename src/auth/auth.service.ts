@@ -74,7 +74,7 @@ export class AuthService {
     // Refresh Token DB에 저장
     await this.usersService.saveRefreshToken(user.id, refreshToken);
 
-    return { accessToken };
+    return { accessToken, refreshToken };
   }
 
   // 🟡 access Token 재발급
@@ -86,14 +86,14 @@ export class AuthService {
 
     // 토큰 재발급
     const accessToken = this.generateAccessToken(userId, user.email, user.role);
-    const refreshToken = this.generateRefreshToken(
-      userId,
-      user.email,
-      user.role,
-    );
+    // const refreshToken = this.generateRefreshToken(
+    //   userId,
+    //   user.email,
+    //   user.role,
+    // );
 
     // DB에 refreshToken 갱신
-    await this.usersService.saveRefreshToken(userId, refreshToken);
+    // await this.usersService.saveRefreshToken(userId, refreshToken);
 
     return {
       accessToken,

@@ -8,13 +8,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+// import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { SignupAuthDto } from './dto/signup-auth.dto';
 import { RequestWithUser } from 'types/user-request.interface';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @ApiBearerAuth()
 @ApiTags('Auth') // Swagger UI 그룹 이름
@@ -37,14 +38,21 @@ export class AuthController {
     @Body() dto: LoginAuthDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken } = await this.authService.login(dto);
+    const { accessToken, refreshToken } = await this.authService.login(dto);
 
     // accessToken 쿠키 설정
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // CSRF 보호
+      sameSite: 'none', // CSRF 보호
       maxAge: 1000 * 60 * 15, // 15분
+      path: '/',
+    });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
       path: '/',
     });
   }
@@ -86,17 +94,31 @@ export class AuthController {
     @Req() req: RequestWithUser,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log('!!!!!!!!!!!!!!!!!!!!!');
+    console.log(0);
     const user = req.user;
+    console.log(user, 'user');
     const { accessToken } = await this.authService.renewAccessToken(
       user.userId,
     );
 
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // CSRF 보호
-      maxAge: 1000 * 60 * 15, // 15분
-      path: '/',
-    });
+    if (accessToken) {
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none', // CSRF 보호
+        maxAge: 1000 * 60 * 15, // 15분
+        path: '/',
+      });
+    } else {
+      console.log('error');
+      res.cookie('accessToken', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none', // CSRF 보호
+        expires: new Date(0),
+        path: '/',
+      });
+    }
   }
 }
