@@ -12,7 +12,6 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { TagsEntity } from 'src/tags/entities/tag.entity';
 import { CategoryEntity } from 'src/categories/entities/category.entity';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { extractPreviewText } from 'src/common/util/extractPreviewText';
 import { PostListItemResponseDto } from './dto/post-list-item-response.dto';
 import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 import { CreatePostResponseDto } from './dto/create-post-response.dto';
@@ -86,8 +85,15 @@ export class PostsService {
   async createPost(
     createPostDto: CreatePostDto,
   ): Promise<CreatePostResponseDto> {
-    const { title, content, authorId, categoryId, tagIds, readPermission } =
-      createPostDto;
+    const {
+      title,
+      content,
+      authorId,
+      categoryId,
+      tagIds,
+      readPermission,
+      previewText,
+    } = createPostDto;
 
     const existingAuthor = await this.userRepo.findOne({
       where: { id: authorId },
@@ -121,9 +127,6 @@ export class PostsService {
         throw new NotFoundException('Some tags were not found');
       }
     }
-
-    // JSON -> 맨 첫 문장
-    const previewText = extractPreviewText(content); // blocks에서 첫 문장 뽑는 함수
 
     const post = this.postRepo.create({
       title,

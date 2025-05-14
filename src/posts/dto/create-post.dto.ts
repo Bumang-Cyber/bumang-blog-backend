@@ -14,10 +14,13 @@ export class CreatePostDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ type: 'object', isArray: true, additionalProperties: true })
-  @IsArray()
-  @IsObject({ each: true }) // 배열 안의 각 요소가 객체인지 확인
-  content: any[];
+  @ApiProperty()
+  @IsString()
+  content: string;
+
+  @ApiProperty()
+  @IsString()
+  previewText: string;
 
   @ApiProperty()
   @IsNumber()

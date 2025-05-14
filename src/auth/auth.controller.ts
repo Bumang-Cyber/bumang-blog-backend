@@ -50,7 +50,7 @@ export class AuthController {
     // 쿠키 설정
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
-      // maxAge: ACCESS_TOKEN_MAX_AGE,
+      maxAge: ACCESS_TOKEN_MAX_AGE,
     });
     res.cookie('refreshToken', refreshToken, {
       ...cookieOptions,
@@ -61,7 +61,7 @@ export class AuthController {
     console.log('📍 Response headers:', res.getHeaders());
 
     // ✅ 응답 반환 추가
-    return { success: true, message: '로그인 성공' };
+    return { success: true, message: 'Login Success' };
   }
 
   // 🔴 로그아웃 (RefreshToken 무효화)

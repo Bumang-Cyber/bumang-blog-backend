@@ -24,8 +24,8 @@ export class PostEntity {
   @Column()
   title: string;
 
-  @Column('jsonb')
-  content: Record<string, any>;
+  @Column()
+  content: string;
 
   @Column({ type: 'text', nullable: true })
   previewText: string;

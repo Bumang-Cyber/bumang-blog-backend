@@ -34,7 +34,7 @@ export class PostDetailResponseDto {
   title: string;
 
   @ApiProperty()
-  content: Record<string, any>;
+  content: string;
 
   @ApiProperty()
   previewText: string;
