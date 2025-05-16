@@ -43,6 +43,7 @@ export class AuthController {
     @Body() dto: LoginAuthDto,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log('🤸🏼');
     const { accessToken, refreshToken } = await this.authService.login(dto);
     const isProduction = process.env.NODE_ENV === 'production';
     const cookieOptions = getCookieOptions(isProduction);
@@ -114,6 +115,8 @@ export class AuthController {
       user.userId,
       refreshToken,
     );
+
+    console.log(accessToken, 'accessToken renewed?');
     const isProduction = process.env.NODE_ENV === 'production';
     const cookieOptions = getCookieOptions(isProduction);
 
@@ -128,6 +131,7 @@ export class AuthController {
     } else {
       console.log('🏅 accessToken renwed successfully');
       res.clearCookie('accessToken', cookieOptions);
+      res.clearCookie('refreshToken', cookieOptions);
       throw new UnauthorizedException('Failed to refresh token');
     }
   }

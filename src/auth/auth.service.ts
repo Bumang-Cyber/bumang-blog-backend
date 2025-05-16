@@ -89,7 +89,14 @@ export class AuthService {
 
     // DB의 refresh token과 현재 토큰 비교
     if (!user.refreshToken || user.refreshToken !== currentRefreshToken) {
-      throw new UnauthorizedException('Invalid Refresh token');
+      console.log('Invalid Refresh token');
+
+      console.log(user.id, 'user.id');
+      await this.usersService.removeRefreshToken(user.id);
+
+      return {
+        accessToken: false,
+      };
     }
 
     // Refresh token 만료 확인 (선택적)
@@ -110,6 +117,7 @@ export class AuthService {
   // 🔴 로그아웃
   async logout(userId: number) {
     await this.usersService.removeRefreshToken(userId);
+
     return { message: 'logout successfully completed' };
   }
 
