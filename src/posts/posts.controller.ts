@@ -128,8 +128,10 @@ export class PostsController {
   @ApiCreatedResponse({ type: CreatePostResponseDto }) // 201 Created용 스웨거 데코레이터
   async createPost(
     @Body() createPostDto: CreatePostDto,
+    @CurrentUser() user?: CurrentUserDto,
   ): Promise<CreatePostResponseDto> {
-    return await this.postsService.createPost(createPostDto);
+    console.log(user, 'currentUser 🏔️');
+    return await this.postsService.createPost(createPostDto, user);
   }
 
   @Get(':id')

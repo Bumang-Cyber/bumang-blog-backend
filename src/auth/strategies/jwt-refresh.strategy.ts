@@ -18,8 +18,6 @@ export class JwtRefreshStrategy extends PassportStrategy(
         (req: RequestWithCookies) => {
           const token = req?.cookies?.['refreshToken'];
           console.log('🌍 Extracted refreshToken:', token);
-          // const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-          // console.log('✅ 수동 디코딩:', decoded);
 
           return token;
         },
@@ -31,6 +29,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
   async validate(payload: any) {
     console.log('💥 JwtRefreshStrategy.validate 호출됨');
     console.log('payload:', payload.sub, payload.email, payload.role);
+    console.log('----------------------------------------');
     return { userId: payload.sub, email: payload.email, role: payload.role };
   }
 }

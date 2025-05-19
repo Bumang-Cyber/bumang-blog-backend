@@ -251,7 +251,8 @@ export class UsersService {
   }
 
   async validateRefreshToken(id: number, refreshToken: string) {
-    if (!id || !refreshToken) {
+    console.log(id, refreshToken, '🏖️ !!!');
+    if (typeof id !== 'number' || !refreshToken) {
       return false;
     }
 
@@ -263,6 +264,9 @@ export class UsersService {
       });
 
       if (!user || !user.refreshToken) {
+        console.log(user.refreshToken, 'user.refreshToken');
+        console.log('🤹‍♀️ isValid: false ? 1');
+
         return false; // 토큰이 DB에 없음
       }
 
@@ -270,6 +274,7 @@ export class UsersService {
       const isTokenMatching = refreshToken === user.refreshToken;
 
       if (!isTokenMatching) {
+        console.log('🤹‍♀️ isValid: false ? 2');
         return false;
       }
 
@@ -281,21 +286,25 @@ export class UsersService {
         // 만료 시간 확인
         if (payload.exp && payload.exp * 1000 < Date.now()) {
           // 토큰이 만료됨 - 삭제하고 false 반환
+          console.log('🤹‍♀️ isValid: false ? 3');
           await this.removeRefreshToken(id);
           return false;
         }
 
         // userId 일치 확인 (추가 보안)
         if (payload.sub !== id.toString()) {
+          console.log('🤹‍♀️ isValid: false ? 4');
           return false;
         }
 
         return true;
       } catch (decodeError) {
+        console.log('🤹‍♀️ isValid: false ? 5');
         console.error('Error decoding refresh token:', decodeError);
         return false;
       }
     } catch (error) {
+      console.log('🤹‍♀️ isValid: false ? 6');
       console.error(`Refresh token validation error for user ${id}:`, error);
       return false;
     }

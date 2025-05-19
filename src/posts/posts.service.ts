@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { PostEntity } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -84,21 +84,21 @@ export class PostsService {
   // 5. 특정 포스트 생성
   async createPost(
     createPostDto: CreatePostDto,
+    currentUser: CurrentUserDto | null,
   ): Promise<CreatePostResponseDto> {
-    const {
-      title,
-      content,
-      authorId,
-      categoryId,
-      tagIds,
-      readPermission,
-      previewText,
-    } = createPostDto;
+    console.log('💌 post', 1);
+    console.log(currentUser, 'currentUser');
+    const authorId = currentUser.userId;
+    console.log('💌 post', 2);
+    const { title, content, categoryId, tagIds, readPermission, previewText } =
+      createPostDto;
 
+    console.log('💌 post', 3);
     const existingAuthor = await this.userRepo.findOne({
       where: { id: authorId },
     });
 
+    console.log('💌 post', 4);
     if (!existingAuthor) {
       throw new NotFoundException(`User with ID ${authorId} not found`);
     }
@@ -196,7 +196,8 @@ export class PostsService {
     dto: UpdatePostDto,
     currentUser: CurrentUserDto | null,
   ): Promise<UpdatePostResponseDto> {
-    const { title, content, categoryId, tagIds, readPermission } = dto;
+    const { title, content, previewText, categoryId, tagIds, readPermission } =
+      dto;
 
     // 아이디로 조회
     const existingPost = await this.postRepo.findOne({
@@ -230,6 +231,12 @@ export class PostsService {
     const existingCategory = await this.categoryRepo.findOne({
       where: { id: categoryId },
     });
+
+    if (typeof previewText !== 'string') {
+      throw new BadRequestException('Invalid PreviewText');
+    }
+
+    existingPost.previewText = previewText;
 
     if (!existingCategory) {
       throw new NotFoundException(

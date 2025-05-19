@@ -79,19 +79,25 @@ export class AuthService {
 
   // 🟡 access Token 재발급
   async renewAccessToken(userId: number, currentRefreshToken: string) {
+    console.log('✈️ 1');
     const user = await this.usersService.validateOneUserById(userId);
+    console.log('✈️ 2');
     if (!user.refreshToken) {
-      throw new UnauthorizedException('Invalid Refresh token');
+      console.log('✈️ 3');
+      return {
+        accessToken: false,
+      };
     }
 
+    console.log('✈️ 4');
     // 토큰 재발급
     const accessToken = this.generateAccessToken(userId, user.email, user.role);
 
+    console.log('✈️ 5');
     // DB의 refresh token과 현재 토큰 비교
     if (!user.refreshToken || user.refreshToken !== currentRefreshToken) {
-      console.log('Invalid Refresh token');
+      console.log('✈️ 6');
 
-      console.log(user.id, 'user.id');
       await this.usersService.removeRefreshToken(user.id);
 
       return {
@@ -101,11 +107,17 @@ export class AuthService {
 
     // Refresh token 만료 확인 (선택적)
     try {
+      console.log('✈️ 7');
+
       this.jwtService.verify(currentRefreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,
       });
+      console.log('✈️ 8');
     } catch (error) {
-      throw new UnauthorizedException('Refresh token expired');
+      console.log('✈️ 9');
+      return {
+        accessToken: false,
+      };
     }
 
     return {

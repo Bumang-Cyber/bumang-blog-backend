@@ -3,7 +3,6 @@ import {
   IsArray,
   IsEnum,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -21,10 +20,6 @@ export class CreatePostDto {
   @ApiProperty()
   @IsString()
   previewText: string;
-
-  @ApiProperty()
-  @IsNumber()
-  authorId: number;
 
   @ApiProperty()
   @IsNumber()

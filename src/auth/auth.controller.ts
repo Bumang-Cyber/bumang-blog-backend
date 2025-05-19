@@ -43,7 +43,6 @@ export class AuthController {
     @Body() dto: LoginAuthDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log('🤸🏼');
     const { accessToken, refreshToken } = await this.authService.login(dto);
     const isProduction = process.env.NODE_ENV === 'production';
     const cookieOptions = getCookieOptions(isProduction);
@@ -81,9 +80,15 @@ export class AuthController {
 
     const logout = await this.authService.logout(user.userId);
 
+    // 쿠키 삭제를 위한 확장 옵션
+    const clearOptions = {
+      ...cookieOptions,
+      maxAge: 0, // 즉시 만료
+    };
+
     // accessToken 쿠키 제거
-    res.clearCookie('accessToken', cookieOptions);
-    res.clearCookie('refreshToken', cookieOptions);
+    res.clearCookie('accessToken', clearOptions);
+    res.clearCookie('refreshToken', clearOptions);
 
     return logout;
   }
@@ -105,20 +110,32 @@ export class AuthController {
       throw new UnauthorizedException('User not found');
     }
 
+    console.log('🏛️ 도달');
+
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = getCookieOptions(isProduction);
+
     // refresh token 추출
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
+      console.log('🔰 loggedOut');
+      const clearOptions = {
+        ...cookieOptions,
+        maxAge: 0, // 즉시 만료
+        // expires: new Date(0), // 1970년 1월 1일로 설정하여 즉시 만료
+      };
+
+      res.clearCookie('accessToken', clearOptions);
+      res.clearCookie('refreshToken', clearOptions);
       throw new UnauthorizedException('Refresh token not found');
     }
+
+    console.log('🔏 refresh exists?');
 
     const { accessToken } = await this.authService.renewAccessToken(
       user.userId,
       refreshToken,
     );
-
-    console.log(accessToken, 'accessToken renewed?');
-    const isProduction = process.env.NODE_ENV === 'production';
-    const cookieOptions = getCookieOptions(isProduction);
 
     if (accessToken) {
       console.log('🏅 accessToken renwed successfully');
@@ -126,12 +143,18 @@ export class AuthController {
         ...cookieOptions,
         maxAge: ACCESS_TOKEN_MAX_AGE,
       });
-
+      console.log('🏴‍☠️ renewAccessToken');
       return { success: true, message: 'Token refreshed' };
     } else {
-      console.log('🏅 accessToken renwed successfully');
-      res.clearCookie('accessToken', cookieOptions);
-      res.clearCookie('refreshToken', cookieOptions);
+      // 쿠키 삭제를 위한 확장 옵션
+      const clearOptions = {
+        ...cookieOptions,
+        maxAge: 0, // 즉시 만료
+        // expires: new Date(0), // 1970년 1월 1일로 설정하여 즉시 만료
+      };
+      console.log('💳 loggedOut');
+      res.clearCookie('accessToken', clearOptions);
+      res.clearCookie('refreshToken', clearOptions);
       throw new UnauthorizedException('Failed to refresh token');
     }
   }
