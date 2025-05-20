@@ -5,7 +5,7 @@ import { GeneratePresignedUrlDto } from './dto/generate-presigned-url.dto';
 
 @ApiBearerAuth() // SWAGGER: 토큰 입력 가능
 @ApiTags('Category') // Swagger UI에서 그룹 이름
-@Controller('categories')
+@Controller('s3')
 export class S3Controller {
   constructor(private readonly s3Service: S3Service) {}
 
