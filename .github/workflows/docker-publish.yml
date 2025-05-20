@@ -25,7 +25,7 @@ jobs:
       - name: Build and Push Docker image
         run: |
           docker buildx build \
-          --platform linux/amd64 \
+          --platform linux/arm64 \
           --file Dockerfile.prod \
           --push \
           -t ${{ secrets.DOCKER_USERNAME }}/bumang-blog-backend:latest \
@@ -39,11 +39,16 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ec2-user/bumang-blog-backend
-            docker-compose -f docker-compose.prod.yaml pull app
-            docker-compose -f docker-compose.prod.yaml up -d --no-deps --build app
+            git pull
+            docker-compose -f docker-compose.prod.yaml --env-file .env.production up -d --build app
 
             echo "⏳ 앱이 올라올 때까지 대기..."
             sleep 5
 
             echo "🚀 Nest 앱 상태 확인 중..."
             curl -f http://localhost:3000/ || exit 1
+
+            echo "🗑️ 불필요한 이미지 정리..."
+            docker image prune -f
+
+            echo "✅ 배포 완료!"
