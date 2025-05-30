@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+// import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { SignupAuthDto } from './dto/signup-auth.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -65,7 +65,6 @@ export class AuthController {
   }
 
   // 🔴 로그아웃 (RefreshToken 무효화)
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   @ApiOperation({
     summary: '로그아웃',

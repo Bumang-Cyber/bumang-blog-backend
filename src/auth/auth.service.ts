@@ -9,7 +9,6 @@ import { SignupAuthDto } from './dto/signup-auth.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RolesEnum } from 'src/users/const/roles.const';
-import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -115,6 +114,7 @@ export class AuthService {
       console.log('✈️ 8');
     } catch (error) {
       console.log('✈️ 9');
+      console.log(error, 'error');
       return {
         accessToken: false,
       };

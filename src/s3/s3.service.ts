@@ -21,9 +21,7 @@ export class S3Service {
 
   async generatePresignedUrl(filename: string, mimetype: string) {
     const FOLDER_NAME = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
-
     const sanitizedFileName = sanitizeFileName(filename);
-    // ✅ S3에 저장될 파일의 키 설정 (썸네일 폴더 + timestamp + 파일명)
     const key = `${FOLDER_NAME}/thumbnails/${Date.now()}_${sanitizedFileName}`;
 
     // ✅ S3에 업로드할 객체 정보 정의
