@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
@@ -76,24 +77,32 @@ export class PostsController {
     @Query('groupId') groupId?: string,
     @Query('categoryId') categoryId?: string,
     @Query('tagIds') tagIds?: string[],
+    @Query('pageSize', new DefaultValuePipe(12), ParseIntPipe)
+    pageSize?: number,
+    @Query('pageIndex', new DefaultValuePipe(1), ParseIntPipe)
+    pageIndex?: number,
   ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const parsedGroupId = groupId !== undefined ? +groupId : undefined;
     const parsedCategoryId = categoryId !== undefined ? +categoryId : undefined;
-    const pageIndex = 1;
-    const pageSize = 10;
 
-    if (groupId && isNaN(parsedGroupId)) {
+    if (typeof groupId !== 'undefined' && isNaN(parsedGroupId)) {
       throw new BadRequestException('groupId must be a number');
     }
-    if (categoryId && isNaN(parsedCategoryId)) {
+    if (typeof categoryId !== 'undefined' && isNaN(parsedCategoryId)) {
       throw new BadRequestException('categoryId must be a number');
     }
 
+    console.log(`🔖 ${tagIds}`);
     // tagsId같은 경우 연달아 여러 개 쓰면 배열로 처리됨.
     const validatedTags = Array.isArray(tagIds)
-      ? tagIds
-      : [tagIds].filter(Boolean);
-    const parsedTagIds = validatedTags.map((id) => parseInt(id, 10));
+      ? tagIds.filter(Boolean)
+      : tagIds
+        ? [tagIds]
+        : [];
+    const parsedTagIds = validatedTags
+      .map((id) => parseInt(id, 10))
+      .filter((id) => !isNaN(id));
+
     return await this.postsService.findPosts(
       pageIndex, //
       pageSize,

@@ -16,15 +16,20 @@ export class PaginatedResponseDto<T> {
   @ApiProperty({ isArray: true })
   data: T[];
 
+  @ApiProperty()
+  subject: string;
+
   constructor(
-    pageSize: number,
     totalCount: number,
+    pageSize: number,
     currentPage: number,
     data: T[],
+    subject?: string,
   ) {
-    this.pageSize = pageSize;
     this.totalCount = totalCount;
+    this.pageSize = pageSize; //
     this.currentPage = currentPage;
     this.data = data;
+    this.subject = subject;
   }
 }

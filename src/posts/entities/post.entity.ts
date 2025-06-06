@@ -15,6 +15,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PostTypeEnum } from '../const/type.const';
 
 @Entity()
 export class PostEntity {
@@ -30,6 +31,9 @@ export class PostEntity {
   @Column({ type: 'text', nullable: true })
   previewText: string;
 
+  @Column({ type: 'text', nullable: true })
+  thumbnailUrl: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -38,6 +42,13 @@ export class PostEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.posts)
   author: UserEntity;
+
+  @Column({
+    type: 'enum',
+    enum: PostTypeEnum,
+    default: PostTypeEnum.DEV,
+  })
+  type: PostTypeEnum;
 
   @Column({
     type: 'enum',

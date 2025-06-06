@@ -57,6 +57,7 @@ export class PostsService {
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.category', 'category')
       .leftJoinAndSelect('category.group', 'group')
+      .leftJoinAndSelect('post.author', 'user')
       .leftJoinAndSelect('post.tags', 'tag');
 
     if (groupId) {
@@ -78,7 +79,31 @@ export class PostsService {
 
     const postDtos = posts.map(PostListItemResponseDto.fromEntity);
 
-    return new PaginatedResponseDto(totalCount, size, page, postDtos);
+    // ✅ 이미 join된 데이터에서 title 추출
+    let subject = '';
+    if (posts.length > 0) {
+      const firstPost = posts[0];
+      if (groupId) {
+        subject = firstPost.category?.group?.label || '';
+      } else if (categoryId) {
+        subject = firstPost.category?.label || '';
+      } else if (tagIds) {
+        // 첫 번째 매칭된 태그의 title 또는 모든 태그 title 조합
+        subject = firstPost.tags
+          ?.filter((tag) => tagIds.includes(tag.id))
+          .map((tag) => tag.title)
+          .join(', ');
+        // .find((tag) => tagIds.includes(tag.id))?.title || '';
+      }
+    }
+
+    return new PaginatedResponseDto(
+      totalCount, //
+      size,
+      page,
+      postDtos,
+      subject,
+    );
   }
 
   // 5. 특정 포스트 생성
