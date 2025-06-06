@@ -81,6 +81,7 @@ export class PostsController {
     pageSize?: number,
     @Query('pageIndex', new DefaultValuePipe(1), ParseIntPipe)
     pageIndex?: number,
+    @Query('type') type?: string,
   ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const parsedGroupId = groupId !== undefined ? +groupId : undefined;
     const parsedCategoryId = categoryId !== undefined ? +categoryId : undefined;
@@ -92,7 +93,8 @@ export class PostsController {
       throw new BadRequestException('categoryId must be a number');
     }
 
-    console.log(`🔖 ${tagIds}`);
+    console.log('👽 type', type);
+
     // tagsId같은 경우 연달아 여러 개 쓰면 배열로 처리됨.
     const validatedTags = Array.isArray(tagIds)
       ? tagIds.filter(Boolean)
@@ -110,6 +112,7 @@ export class PostsController {
         groupId: parsedGroupId,
         categoryId: parsedCategoryId,
         tagIds: parsedTagIds,
+        type: type,
       },
       // role,
     );

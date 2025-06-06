@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PostEntity } from '../entities/post.entity';
 import { RolesEnum } from 'src/users/const/roles.const';
+import { PostTypeEnum } from '../const/type.const';
 
 export class PostListItemResponseDto {
   @ApiProperty({ example: 0 })
@@ -40,6 +41,12 @@ export class PostListItemResponseDto {
   @ApiProperty()
   thumbnailUrl: string;
 
+  @ApiProperty({
+    example: 'life',
+    enum: PostTypeEnum,
+  })
+  type: PostTypeEnum;
+
   static fromEntity(
     post: PostEntity & { score?: number },
   ): PostListItemResponseDto {
@@ -55,6 +62,7 @@ export class PostListItemResponseDto {
     dto.author = post.author?.nickname ?? 'unknown';
     dto.readPermisson = post.readPermission;
     dto.thumbnailUrl = post.thumbnailUrl;
+    dto.type = post.type;
 
     return dto;
   }

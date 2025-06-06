@@ -49,9 +49,10 @@ export class PostsService {
       groupId?: number;
       categoryId?: number;
       tagIds?: number[];
+      type?: string;
     },
   ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
-    const { groupId, categoryId, tagIds } = filter;
+    const { groupId, categoryId, tagIds, type } = filter;
 
     const query = this.postRepo
       .createQueryBuilder('post')
@@ -67,6 +68,8 @@ export class PostsService {
     } else if (Array.isArray(tagIds) && tagIds.length !== 0) {
       // 기존: query.where('tag.id = :tagIds', { tagIds });
       query.where('tag.id IN (:...tagIds)', { tagIds });
+    } else if (type === 'dev' || type === 'life') {
+      query.where('post.type = :type', { type });
     }
 
     query.orderBy('post.id', 'DESC');
@@ -94,6 +97,8 @@ export class PostsService {
           .map((tag) => tag.title)
           .join(', ');
         // .find((tag) => tagIds.includes(tag.id))?.title || '';
+      } else if (type) {
+        subject = type;
       }
     }
 
