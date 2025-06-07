@@ -21,6 +21,7 @@ import { AppDataSource } from './data-source';
     }),
     TypeOrmModule.forRoot({
       ...AppDataSource.options,
+      synchronize: true,
     }),
     UsersModule,
     PostsModule,
