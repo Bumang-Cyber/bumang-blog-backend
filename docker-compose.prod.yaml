@@ -27,6 +27,8 @@ services:
       - db
     env_file:
       - .env.production
+    environment:
+      - NODE_ENV=production
 
 volumes:
   postgres_data:
