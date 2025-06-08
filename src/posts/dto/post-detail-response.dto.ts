@@ -77,6 +77,9 @@ export class PostDetailResponseDto {
   })
   tags: TagSimplifiedResponse[];
 
+  @ApiProperty()
+  thumbnailUrl: string;
+
   static fromEntity(post: PostEntity): PostDetailResponseDto {
     const dto = new PostDetailResponseDto();
     dto.id = post.id;
@@ -89,6 +92,7 @@ export class PostDetailResponseDto {
 
     dto.authorNickname = post.author?.nickname ?? 'unknown';
     dto.readPermission = post.readPermission;
+    dto.thumbnailUrl = post.thumbnailUrl;
 
     dto.views = post.view;
     dto.likes = post.likes;

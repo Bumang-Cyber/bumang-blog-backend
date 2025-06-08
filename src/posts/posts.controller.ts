@@ -118,17 +118,6 @@ export class PostsController {
     );
   }
 
-  @Get(':id/related')
-  @ApiOperation({
-    summary: '관련된 포스트 조회',
-    description: '특정 게시물에 관련된 포스트를 세 개 조회합니다.',
-  })
-  async findRelatedPosts(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<PostListItemResponseDto[]> {
-    return await this.postsService.findRelatedPosts(id);
-  }
-
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN, RolesEnum.USER)
@@ -156,6 +145,32 @@ export class PostsController {
     @CurrentUser() user?: CurrentUserDto,
   ) {
     return await this.postsService.findPostDetail(id, user || null);
+  }
+
+  @Get(':id/related')
+  @ApiOperation({
+    summary: '관련된 포스트 조회',
+    description: '특정 게시물에 관련된 포스트를 세 개 조회합니다.',
+  })
+  async findRelatedPosts(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<PostListItemResponseDto[]> {
+    return await this.postsService.findRelatedPosts(id);
+  }
+
+  @Get(':id/adjacent')
+  @ApiOperation({
+    summary: '인접 포스트 조회',
+    description: '특정 게시물의 인접 포스트를 조회합니다.',
+  })
+  async findAdjacentPosts(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user?: CurrentUserDto,
+  ): Promise<{
+    previous: PostListItemResponseDto;
+    next: PostListItemResponseDto;
+  }> {
+    return await this.postsService.findAdjacentPosts(id, user);
   }
 
   @UseGuards(JwtAuthGuard, IsOwnerGuard)

@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { LessThan, MoreThan, Repository } from 'typeorm';
 import { PostEntity } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -21,6 +21,7 @@ import { canReadPost } from './util/canReadPost';
 import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 import { canCreateOrUpdatePost } from './util/canCreateOrUpdatePost';
 import { PostDetailResponseDto } from './dto/post-detail-response.dto';
+import { getPermissionCondition } from './util/getPermissionCondition';
 
 @Injectable()
 export class PostsService {
@@ -175,7 +176,10 @@ export class PostsService {
   }
 
   // 6. 특정 포스트 상세 조회
-  async findPostDetail(id: number, currentUser: CurrentUserDto | null) {
+  async findPostDetail(
+    id: number,
+    currentUser: CurrentUserDto | null,
+  ): Promise<PostDetailResponseDto> {
     const post = await this.postRepo.findOne({
       where: { id },
       relations: ['category', 'comments', 'tags', 'category.group', 'author'],
@@ -424,6 +428,51 @@ export class PostsService {
     return relatedPosts
       .sort((a, b) => b.score - a.score)
       .map((post) => ({ ...post, score: Number(post.score) }));
+  }
+
+  async findAdjacentPosts(postId: number, currentUser: CurrentUserDto | null) {
+    const currentPost = await this.postRepo.findOne({
+      where: { id: postId },
+    });
+
+    if (!currentPost) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const permissionCondition = getPermissionCondition(currentUser);
+
+    // 이전/다음 포스트 조회
+    const [prevPost, nextPost] = await Promise.all([
+      this.postRepo.findOne({
+        where: Array.isArray(permissionCondition)
+          ? permissionCondition.map((condition) => ({
+              id: LessThan(postId),
+              ...condition,
+            }))
+          : {
+              id: LessThan(postId),
+              ...permissionCondition,
+            },
+        order: { id: 'DESC' },
+      }),
+      this.postRepo.findOne({
+        where: Array.isArray(permissionCondition)
+          ? permissionCondition.map((condition) => ({
+              id: MoreThan(postId),
+              ...condition,
+            }))
+          : {
+              id: MoreThan(postId),
+              ...permissionCondition,
+            },
+        order: { id: 'ASC' },
+      }),
+    ]);
+
+    return {
+      previous: PostListItemResponseDto.fromEntity(prevPost) || null,
+      next: PostListItemResponseDto.fromEntity(nextPost) || null,
+    };
   }
 
   async addLikes(postId: number) {
