@@ -36,6 +36,7 @@ import { PaginatedResponseDto } from 'src/common/dto/pagenated-response.dto';
 import { CreatePostResponseDto } from './dto/create-post-response.dto';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { CurrentUserDto } from 'src/common/dto/current-user.dto';
+import { OptionalJwtAuthGuard } from 'src/auth/guards/optional-jwt.guard';
 
 @ApiBearerAuth()
 @ApiTags('Posts') // Swagger UI 그룹 이름
@@ -136,6 +137,7 @@ export class PostsController {
   }
 
   @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
     summary: '게시글 상세 조회',
     description: '특정 게시글을 상세 조회합니다.',

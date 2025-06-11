@@ -180,19 +180,24 @@ export class PostsService {
     id: number,
     currentUser: CurrentUserDto | null,
   ): Promise<PostDetailResponseDto> {
+    console.log(currentUser, '👯 currentUser');
+    console.log('🫡 1');
     const post = await this.postRepo.findOne({
       where: { id },
       relations: ['category', 'comments', 'tags', 'category.group', 'author'],
       order: { id: 'DESC' },
     });
+    console.log('🫡 2');
 
     if (!post) {
+      console.log('🫡 3');
       throw new NotFoundException('Post were not found');
     }
-
+    console.log('🫡 4');
     const userRole = currentUser?.role || null;
     if (!canReadPost(post.readPermission, userRole)) {
-      //
+      console.log('🫡 5');
+
       throw new ForbiddenException(
         'You do not have permission to view this post.',
       );
@@ -444,34 +449,24 @@ export class PostsService {
     // 이전/다음 포스트 조회
     const [prevPost, nextPost] = await Promise.all([
       this.postRepo.findOne({
-        where: Array.isArray(permissionCondition)
-          ? permissionCondition.map((condition) => ({
-              id: LessThan(postId),
-              ...condition,
-            }))
-          : {
-              id: LessThan(postId),
-              ...permissionCondition,
-            },
+        where: permissionCondition.map((condition) => ({
+          id: LessThan(postId),
+          ...condition,
+        })),
         order: { id: 'DESC' },
       }),
       this.postRepo.findOne({
-        where: Array.isArray(permissionCondition)
-          ? permissionCondition.map((condition) => ({
-              id: MoreThan(postId),
-              ...condition,
-            }))
-          : {
-              id: MoreThan(postId),
-              ...permissionCondition,
-            },
+        where: permissionCondition.map((condition) => ({
+          id: MoreThan(postId),
+          ...condition,
+        })),
         order: { id: 'ASC' },
       }),
     ]);
 
     return {
-      previous: PostListItemResponseDto.fromEntity(prevPost) || null,
-      next: PostListItemResponseDto.fromEntity(nextPost) || null,
+      previous: prevPost ? PostListItemResponseDto.fromEntity(prevPost) : null,
+      next: nextPost ? PostListItemResponseDto.fromEntity(nextPost) : null,
     };
   }
 

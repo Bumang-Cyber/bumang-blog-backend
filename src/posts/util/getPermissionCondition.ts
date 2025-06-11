@@ -6,7 +6,7 @@ import { IsNull } from 'typeorm';
 export const getPermissionCondition = (currentUser: CurrentUserDto | null) => {
   if (!currentUser) {
     // 비로그인: 공개 포스트만
-    return { readPermission: IsNull() };
+    return [{ readPermission: IsNull() }];
   } else if (currentUser.role === 'user') {
     // USER: 공개 + USER 권한 포스트
     return [{ readPermission: IsNull() }, { readPermission: currentUser.role }];
