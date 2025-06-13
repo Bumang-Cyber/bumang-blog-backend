@@ -121,8 +121,15 @@ export class PostsService {
     console.log(currentUser, 'currentUser');
     const authorId = currentUser.userId;
     console.log('💌 post', 2);
-    const { title, content, categoryId, tagIds, readPermission, previewText } =
-      createPostDto;
+    const {
+      title,
+      content,
+      categoryId,
+      tagIds,
+      readPermission,
+      previewText,
+      thumbnailUrl,
+    } = createPostDto;
 
     console.log('💌 post', 3);
     const existingAuthor = await this.userRepo.findOne({
@@ -164,6 +171,7 @@ export class PostsService {
       content,
       previewText,
       readPermission,
+      thumbnailUrl,
       author: existingAuthor,
       category: existingCategory,
       tags: validTags,
@@ -407,6 +415,7 @@ export class PostsService {
       .select('post.id', 'id') // id라는 컬럼으로 post.id 가져옴
       .addSelect('post.title', 'title') // title이라는 컬럼으로 post.title 가져옴
       .addSelect('post.previewText', 'previewText') // previewText이라는 컬럼으로 post.previewText 가져옴
+      .addSelect('post.thumbnailUrl', 'thumbnailUrl') // previewText이라는 컬럼으로 post.previewText 가져옴
       .addSelect('post.createdAt', 'createdAt')
       .addSelect('category.label', 'categoryLabel') // 이미 leftJoin했으니 가능
       .addSelect('group.label', 'groupLabel') // 이미 leftJoin했으니 가능

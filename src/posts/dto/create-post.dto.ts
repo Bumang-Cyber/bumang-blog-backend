@@ -22,6 +22,11 @@ export class CreatePostDto {
   previewText: string;
 
   @ApiProperty()
+  @IsOptional()
+  @IsString()
+  thumbnailUrl: string;
+
+  @ApiProperty()
   @IsNumber()
   categoryId: number;
 

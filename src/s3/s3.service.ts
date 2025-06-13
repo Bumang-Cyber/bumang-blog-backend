@@ -29,6 +29,7 @@ export class S3Service {
       Bucket: process.env.AWS_BUCKET_NAME, // 사용할 S3 버킷 이름
       Key: key, // S3 객체 키 (파일 경로)
       ContentType: mimetype, // 파일 MIME 타입
+      // ACL: 'public-read', // 퍼블릭 타입으로.
     };
 
     // ✅ 파일 업로드를 위한 S3 명령 생성

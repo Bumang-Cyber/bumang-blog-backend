@@ -132,7 +132,6 @@ export class PostsController {
     @Body() createPostDto: CreatePostDto,
     @CurrentUser() user?: CurrentUserDto,
   ): Promise<CreatePostResponseDto> {
-    console.log(user, 'currentUser 🏔️');
     return await this.postsService.createPost(createPostDto, user);
   }
 
