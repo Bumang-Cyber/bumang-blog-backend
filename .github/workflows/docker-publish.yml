@@ -40,6 +40,9 @@ jobs:
           script: |
             cd /home/ec2-user/bumang-blog-backend
             git pull
+
+            mkdir -p nginx certbot/conf certbot/www
+
             docker-compose -f docker-compose.prod.yaml --env-file .env.production up -d --build app
 
             echo "⏳ 앱이 올라올 때까지 대기..."

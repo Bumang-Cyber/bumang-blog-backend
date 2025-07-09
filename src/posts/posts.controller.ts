@@ -94,8 +94,6 @@ export class PostsController {
       throw new BadRequestException('categoryId must be a number');
     }
 
-    console.log('👽 type', type);
-
     // tagsId같은 경우 연달아 여러 개 쓰면 배열로 처리됨.
     const validatedTags = Array.isArray(tagIds)
       ? tagIds.filter(Boolean)
