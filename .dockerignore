@@ -2,4 +2,8 @@ node_modules
 dist
 .env
 .env.*
+!.env.production
 docker-compose.yaml
+certbot/conf/accounts
+certbot/conf/live
+certbot/conf/renewal
