@@ -48,7 +48,7 @@ jobs:
             docker-compose -f docker-compose.prod.yaml --env-file .env.production up -d app
 
             echo "⏳ 앱이 올라올 때까지 대기..."
-            sleep 10  # 시간 늘림
+            sleep 15
 
             echo "🔍 컨테이너 상태 확인..."
             docker ps

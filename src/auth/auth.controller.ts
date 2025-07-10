@@ -8,12 +8,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-// import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { SignupAuthDto } from './dto/signup-auth.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 import {
@@ -66,6 +66,7 @@ export class AuthController {
 
   // 🔴 로그아웃 (RefreshToken 무효화)
   @Post('logout')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '로그아웃',
     description: '서비스에서 로그아웃합니다.',
