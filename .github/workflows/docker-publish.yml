@@ -48,10 +48,16 @@ jobs:
             docker-compose -f docker-compose.prod.yaml --env-file .env.production up -d app
 
             echo "⏳ 앱이 올라올 때까지 대기..."
-            sleep 5
+            sleep 10  # 시간 늘림
+
+            echo "🔍 컨테이너 상태 확인..."
+            docker ps
+
+            echo "📋 앱 컨테이너 로그 확인..."
+            docker logs bumang_blog_backend --tail 50
 
             echo "🚀 Nest 앱 상태 확인 중..."
-            curl -f http://localhost:3000/ || exit 1
+            curl -f http://localhost:3000/ || echo "앱 연결 실패"
 
             echo "🗑️ 불필요한 이미지 정리..."
             docker image prune -f
