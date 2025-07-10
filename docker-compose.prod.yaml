@@ -37,9 +37,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
+    image: bumang/bumang-blog-backend:latest
     container_name: bumang_blog_backend
     restart: unless-stopped
     ports:
