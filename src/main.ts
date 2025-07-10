@@ -35,7 +35,14 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
 
-  app.enableCors({ origin: 'http://localhost:4000', credentials: true });
+  app.enableCors({
+    origin: [
+      'http://localhost:4000',
+      'https://bumang.xyz',
+      'https://www.bumang.xyz',
+    ],
+    credentials: true,
+  });
   await app.listen(process.env.APP_PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();
