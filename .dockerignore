@@ -4,6 +4,4 @@ dist
 .env.*
 !.env.production
 docker-compose.yaml
-certbot/conf/accounts
-certbot/conf/live
-certbot/conf/renewal
+certbot/
