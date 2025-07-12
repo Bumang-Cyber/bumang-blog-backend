@@ -243,8 +243,15 @@ export class PostsService {
     dto: UpdatePostDto,
     currentUser: CurrentUserDto | null,
   ): Promise<UpdatePostResponseDto> {
-    const { title, content, previewText, categoryId, tagIds, readPermission } =
-      dto;
+    const {
+      title,
+      content,
+      previewText,
+      categoryId,
+      tagIds,
+      readPermission,
+      thumbnailUrl,
+    } = dto;
 
     // 아이디로 조회
     const existingPost = await this.postRepo.findOne({
@@ -314,6 +321,10 @@ export class PostsService {
 
     if (readPermission !== undefined) {
       existingPost.readPermission = readPermission;
+    }
+
+    if (typeof thumbnailUrl === 'string') {
+      existingPost.thumbnailUrl = thumbnailUrl;
     }
 
     await this.postRepo.save(existingPost);
