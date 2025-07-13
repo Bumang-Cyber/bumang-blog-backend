@@ -153,7 +153,8 @@ export class PostsService {
 
     let postType = PostTypeEnum.DEV;
     const selectedGroup = existingCategory.group?.label;
-    if (selectedGroup === 'life') {
+    console.log(selectedGroup, 'selectedGroup');
+    if (selectedGroup === 'Life') {
       postType = PostTypeEnum.LIFE;
     }
 
@@ -293,6 +294,7 @@ export class PostsService {
 
     const existingCategory = await this.categoryRepo.findOne({
       where: { id: categoryId },
+      relations: ['group'],
     });
 
     if (typeof previewText !== 'string') {
@@ -309,7 +311,7 @@ export class PostsService {
 
     existingPost.category = existingCategory;
 
-    if (existingCategory.label === 'life') {
+    if (existingCategory.group.label === 'Life') {
       existingPost.type = PostTypeEnum.LIFE;
     }
 
