@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { LessThan, MoreThan, Repository } from 'typeorm';
+import { In, LessThan, MoreThan, Repository } from 'typeorm';
 import { PostEntity } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -23,12 +23,16 @@ import { canCreateOrUpdatePost } from './util/canCreateOrUpdatePost';
 import { PostDetailResponseDto } from './dto/post-detail-response.dto';
 import { getPermissionCondition } from './util/getPermissionCondition';
 import { PostTypeEnum } from './const/type.const';
+import { GroupEntity } from 'src/categories/entities/group.entity';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostEntity)
     private readonly postRepo: Repository<PostEntity>,
+
+    @InjectRepository(GroupEntity)
+    private readonly groupRepo: Repository<GroupEntity>,
 
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
@@ -86,26 +90,27 @@ export class PostsService {
 
     const postDtos = posts.map(PostListItemResponseDto.fromEntity);
 
-    // 이미 join된 데이터에서 title 추출
     let subject = '';
-    if (posts.length > 0) {
-      const firstPost = posts[0];
-      if (groupId) {
-        subject = firstPost.category?.group?.label || '';
-      } else if (categoryId) {
-        subject = firstPost.category?.label || '';
-      } else if (tagIds) {
-        // 첫 번째 매칭된 태그의 title 또는 모든 태그 title 조합
-        subject = firstPost.tags
-          ?.filter((tag) => tagIds.includes(tag.id))
-          .map((tag) => tag.title)
-          .join(', ');
-        // .find((tag) => tagIds.includes(tag.id))?.title || '';
-      }
 
-      if (type) {
-        subject = type;
-      }
+    if (groupId) {
+      const targetGroup = await this.groupRepo.findOne({
+        where: { id: groupId },
+      });
+      subject = targetGroup.label;
+    } else if (categoryId) {
+      const targetCategory = await this.categoryRepo.findOne({
+        where: { id: categoryId },
+      });
+      subject = targetCategory.label;
+    } else if (tagIds) {
+      const targetTags = await this.tagRepo.find({
+        where: { id: In(tagIds) },
+      });
+      subject = targetTags.map((tag) => tag.title).join(', ');
+    }
+
+    if (type) {
+      subject = type;
     }
 
     return new PaginatedResponseDto(
@@ -361,65 +366,6 @@ export class PostsService {
 
     return DeletePostResponseDto.fromEntity(existingPost);
   }
-
-  // 9. 관련 포스트 조회
-  // async findRelatedPosts(postId: number): Promise<PostListItemResponseDto[]> {
-  //   const targetPost = await this.postRepo.findOne({
-  //     where: { id: postId },
-  //     relations: ['tags', 'category', 'category.group'], // 태그, 카테고리, 그룹 가져오기
-  //   });
-
-  //   // 아이디 추출
-  //   const tagIds = targetPost.tags.map((tag) => tag.id);
-  //   const categoryId = targetPost.category.id;
-  //   const groupId = targetPost.category.group.id;
-
-  //   // 결과를 가져올 배열 생성
-  //   const result: PostEntity[] = [];
-
-  //   // 1. 같은 태그
-  //   // 테이블 설정 -> join -> where -> take -> get...
-  //   if (tagIds.length) {
-  //     const postsByTag = await this.postRepo
-  //       .createQueryBuilder('post') // post 테이블 기준으로 쿼리 빌드 시작
-  //       .leftJoin('post.tags', 'tag') // post.tags와 LEFT JOIN (다대다 관계), 연결된 tag의 정보를 참조 가능한 상태로 만든다.
-  //       .where('tag.id IN (:...tagIds)', { tagIds }) // 현재 포스트의 태그 ID 중 하나라도 포함된 포스트, :가 붙으면 모두 변수로 생각하기
-  //       .andWhere('post.id != :id', { id: postId }) // 자기 자신은 제외 (중복 방지), &&를 안 쓰고 나눠서 조건주기 위해서 andWhere 사용
-  //       .take(3) // 최대 3개만 가져오기
-  //       .getMany(); // 실제 데이터 가져오기
-
-  //     result.push(...postsByTag);
-  //   }
-
-  //   if (result.length < 3) {
-  //     const postsByCategory = await this.postRepo.find({
-  //       where: {
-  //         category: { id: categoryId },
-  //         id: Not(postId), // 자기자신 제외
-  //       },
-  //       take: 3 - result.length,
-  //     });
-
-  //     result.push(...postsByCategory);
-  //   }
-
-  //   // post → category → group 까지 관계 traversal 필요 => 쿼리빌더로 처리하는게 성능 좋음
-  //   // 테이블 설정 -> join -> where -> take -> get...
-  //   if (result.length < 3) {
-  //     const postsByGroup = await this.postRepo
-  //       .createQueryBuilder('post') // post 테이블 기준으로 쿼리 빌드
-  //       .leftJoin('post.category', 'category') // post.category와 LEFT JOIN, category를 참조 가능하도록 불러온다.
-  //       .leftJoin('category.group', 'group') // category.group과 다시 LEFT JOIN, group을 참조 가능하도록 불러온다.
-  //       .where('group.id = :groupId', { groupId }) // 기준 포스트와 같은 그룹 ID를 가진 글만 대상
-  //       .andWhere('post.id != :id', { id: postId }) // 자기 자신은 제외
-  //       .take(3 - result.length) // 남은 개수만큼만 가져오기
-  //       .getMany(); // 실제 포스트 리스트 가져오기
-
-  //     result.push(...postsByGroup);
-  //   }
-
-  //   return result.slice(0, 3).map(PostListItemResponseDto.fromEntity); // 혹시라도 중복방지
-  // }
 
   async findRelatedPosts(postId: number): Promise<PostListItemResponseDto[]> {
     const targetPost = await this.postRepo.findOne({
