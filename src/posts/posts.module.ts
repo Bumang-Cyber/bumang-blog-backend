@@ -7,6 +7,7 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { TagsEntity } from 'src/tags/entities/tag.entity';
 import { CategoryEntity } from 'src/categories/entities/category.entity';
 import { CommentsModule } from 'src/comments/comments.module';
+import { GroupEntity } from 'src/categories/entities/group.entity';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CommentsModule } from 'src/comments/comments.module';
       UserEntity,
       TagsEntity,
       CategoryEntity,
+      GroupEntity,
     ]),
     forwardRef(() => CommentsModule),
   ],
