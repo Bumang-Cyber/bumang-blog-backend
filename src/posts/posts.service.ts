@@ -69,21 +69,23 @@ export class PostsService {
     } else if (Array.isArray(tagIds) && tagIds.length !== 0) {
       // 기존: query.where('tag.id = :tagIds', { tagIds });
       query.where('tag.id IN (:...tagIds)', { tagIds });
-    } else if (type === 'dev' || type === 'life') {
+    }
+
+    if (type === 'dev' || type === 'life') {
       query.where('post.type = :type', { type });
     }
 
     query.orderBy('post.id', 'DESC');
 
-    // ✅ pagination 적용
+    // pagination 적용
     query.skip((page - 1) * size).take(size);
 
-    // ✅ get [data, totalCount]
+    // get [data, totalCount]
     const [posts, totalCount] = await query.getManyAndCount();
 
     const postDtos = posts.map(PostListItemResponseDto.fromEntity);
 
-    // ✅ 이미 join된 데이터에서 title 추출
+    // 이미 join된 데이터에서 title 추출
     let subject = '';
     if (posts.length > 0) {
       const firstPost = posts[0];
@@ -98,7 +100,9 @@ export class PostsService {
           .map((tag) => tag.title)
           .join(', ');
         // .find((tag) => tagIds.includes(tag.id))?.title || '';
-      } else if (type) {
+      }
+
+      if (type) {
         subject = type;
       }
     }
