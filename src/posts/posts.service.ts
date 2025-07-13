@@ -22,6 +22,7 @@ import { CurrentUserDto } from 'src/common/dto/current-user.dto';
 import { canCreateOrUpdatePost } from './util/canCreateOrUpdatePost';
 import { PostDetailResponseDto } from './dto/post-detail-response.dto';
 import { getPermissionCondition } from './util/getPermissionCondition';
+import { PostTypeEnum } from './const/type.const';
 
 @Injectable()
 export class PostsService {
@@ -121,10 +122,8 @@ export class PostsService {
     createPostDto: CreatePostDto,
     currentUser: CurrentUserDto | null,
   ): Promise<CreatePostResponseDto> {
-    console.log('💌 post', 1);
     console.log(currentUser, 'currentUser');
     const authorId = currentUser.userId;
-    console.log('💌 post', 2);
     const {
       title,
       content,
@@ -135,22 +134,27 @@ export class PostsService {
       thumbnailUrl,
     } = createPostDto;
 
-    console.log('💌 post', 3);
     const existingAuthor = await this.userRepo.findOne({
       where: { id: authorId },
     });
 
-    console.log('💌 post', 4);
     if (!existingAuthor) {
       throw new NotFoundException(`User with ID ${authorId} not found`);
     }
 
     const existingCategory = await this.categoryRepo.findOne({
       where: { id: categoryId },
+      relations: ['group'],
     });
 
     if (!existingCategory) {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
+    }
+
+    let postType = PostTypeEnum.DEV;
+    const selectedGroup = existingCategory.group?.label;
+    if (selectedGroup === 'life') {
+      postType = PostTypeEnum.LIFE;
     }
 
     let validTags: TagsEntity[] = [];
@@ -176,6 +180,7 @@ export class PostsService {
       previewText,
       readPermission,
       thumbnailUrl,
+      type: postType,
       author: existingAuthor,
       category: existingCategory,
       tags: validTags,
@@ -303,6 +308,10 @@ export class PostsService {
     }
 
     existingPost.category = existingCategory;
+
+    if (existingCategory.label === 'life') {
+      existingPost.type = PostTypeEnum.LIFE;
+    }
 
     let validTags: TagsEntity[] = [];
     if (tagIds && tagIds.length > 0) {
