@@ -74,14 +74,11 @@ export class PostsController {
     example: 'number[]',
     type: 'number[]',
   })
-  @UseGuards(OptionalJwtAuthGuard)
-  async findAllPosts(
-    user: CurrentUserDto,
+  async findAllPostsPublic(
     @Query('groupId') groupId?: string,
     @Query('categoryId') categoryId?: string,
     @Query('tagIds') tagIds?: string[],
     @Query('pageSize', new DefaultValuePipe(12), ParseIntPipe)
-    @CurrentUser()
     pageSize?: number,
     @Query('pageIndex', new DefaultValuePipe(1), ParseIntPipe)
     pageIndex?: number,
@@ -107,7 +104,7 @@ export class PostsController {
       .map((id) => parseInt(id, 10))
       .filter((id) => !isNaN(id));
 
-    return await this.postsService.findPosts(
+    return await this.postsService.findPostsPublic(
       pageIndex, //
       pageSize,
       {
@@ -116,7 +113,75 @@ export class PostsController {
         tagIds: parsedTagIds,
         type: type,
       },
-      user ?? null,
+    );
+  }
+
+  @Get('authenticated')
+  @ApiOperation({
+    summary: '모든 게시글 조회',
+    description: 'DB에 있는 모든 게시글 목록을 반환합니다.',
+  })
+  @ApiQuery({
+    name: 'groupId',
+    required: false,
+    description: '그룹 아이디로 조회 시',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    description: '최대 개수',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'tagIds',
+    required: false,
+    description: '태그 아이디로 조회 (중첩 가능)',
+    example: 'number[]',
+    type: 'number[]',
+  })
+  @UseGuards(OptionalJwtAuthGuard)
+  async findAllPostsAuthenticated(
+    @CurrentUser() user: CurrentUserDto,
+    @Query('groupId') groupId?: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('tagIds') tagIds?: string[],
+    @Query('pageSize', new DefaultValuePipe(12), ParseIntPipe)
+    pageSize?: number,
+    @Query('pageIndex', new DefaultValuePipe(1), ParseIntPipe)
+    pageIndex?: number,
+    @Query('type') type?: string,
+  ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
+    const parsedGroupId = groupId !== undefined ? +groupId : undefined;
+    const parsedCategoryId = categoryId !== undefined ? +categoryId : undefined;
+
+    if (typeof groupId !== 'undefined' && isNaN(parsedGroupId)) {
+      throw new BadRequestException('groupId must be a number');
+    }
+    if (typeof categoryId !== 'undefined' && isNaN(parsedCategoryId)) {
+      throw new BadRequestException('categoryId must be a number');
+    }
+
+    // tagsId같은 경우 연달아 여러 개 쓰면 배열로 처리됨.
+    const validatedTags = Array.isArray(tagIds)
+      ? tagIds.filter(Boolean)
+      : tagIds
+        ? [tagIds]
+        : [];
+    const parsedTagIds = validatedTags
+      .map((id) => parseInt(id, 10))
+      .filter((id) => !isNaN(id));
+
+    return await this.postsService.findPostsAuthenticated(
+      pageIndex, //
+      pageSize,
+      {
+        groupId: parsedGroupId,
+        categoryId: parsedCategoryId,
+        tagIds: parsedTagIds,
+        type: type,
+      },
+      user,
     );
   }
 

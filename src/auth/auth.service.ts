@@ -73,7 +73,7 @@ export class AuthService {
     // Refresh Token DB에 저장
     await this.usersService.saveRefreshToken(user.id, refreshToken);
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, user };
   }
 
   // 🟡 access Token 재발급
