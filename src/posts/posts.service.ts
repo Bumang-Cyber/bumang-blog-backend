@@ -161,8 +161,8 @@ export class PostsService {
       );
     }
 
-    // User인데 Admin Only 옵션으로 글 쓰려고 할 때.
-    if (user.role === RolesEnum.USER && readPermission === RolesEnum.ADMIN) {
+    // User인데 Admin Only 나 Public 옵션으로 글 쓰려고 할 때.
+    if (user.role === RolesEnum.USER && readPermission !== RolesEnum.USER) {
       throw new ForbiddenException(
         `Normal Users cannot create posts with Admin-only permission.`,
       );
@@ -179,7 +179,7 @@ export class PostsService {
 
     let postType = PostTypeEnum.DEV;
     const selectedGroup = existingCategory.group?.label;
-    console.log(selectedGroup, 'selectedGroup');
+
     if (selectedGroup === 'Life') {
       postType = PostTypeEnum.LIFE;
     }
@@ -353,6 +353,13 @@ export class PostsService {
     }
 
     existingPost.tags = validTags;
+
+    if (
+      currentUser.role === RolesEnum.USER &&
+      readPermission !== RolesEnum.USER
+    ) {
+      throw new ForbiddenException('Users can only write public posts.');
+    }
 
     if (readPermission !== undefined) {
       existingPost.readPermission = readPermission;
