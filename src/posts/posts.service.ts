@@ -83,12 +83,16 @@ export class PostsService {
       query.where('post.type = :type', { type });
     }
 
-    if (!user) {
-      // 비로그인 사용자: ADMIN, USER 권한 포스트 모두 차단
-      query.andWhere('post.readPermission NOT IN (:...blockedPermissions)', {
-        blockedPermissions: [RolesEnum.USER],
-      });
-    }
+    // if (!user) {
+    //   // 비로그인 사용자: USER 권한 포스트를 리스트에서 볼 수 없게.
+    //   query.andWhere(
+    //     'post.readPermission != :blocked OR post.readPermission IS NULL',
+    //     {
+    //       blocked: RolesEnum.USER,
+    //     },
+    //   );
+    // }
+
     query.orderBy('post.id', 'DESC');
 
     // pagination 적용
@@ -161,7 +165,7 @@ export class PostsService {
       );
     }
 
-    // User인데 Admin Only 나 Public 옵션으로 글 쓰려고 할 때.
+    // 사용자 권한이 User인데 Admin Only 나 Public 옵션으로 글 쓰려고 할 때.
     if (user.role === RolesEnum.USER && readPermission !== RolesEnum.USER) {
       throw new ForbiddenException(
         `Normal Users cannot create posts with Admin-only permission.`,
