@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { In, LessThan, MoreThan, Repository } from 'typeorm';
 import { PostEntity } from './entities/post.entity';
@@ -24,6 +25,7 @@ import { PostDetailResponseDto } from './dto/post-detail-response.dto';
 import { getPermissionCondition } from './util/getPermissionCondition';
 import { PostTypeEnum } from './const/type.const';
 import { GroupEntity } from 'src/categories/entities/group.entity';
+import { RolesEnum } from 'src/users/const/roles.const';
 
 @Injectable()
 export class PostsService {
@@ -57,6 +59,7 @@ export class PostsService {
       tagIds?: number[];
       type?: string;
     },
+    user: CurrentUserDto | null,
   ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const { groupId, categoryId, tagIds, type } = filter;
 
@@ -80,6 +83,12 @@ export class PostsService {
       query.where('post.type = :type', { type });
     }
 
+    if (!user) {
+      // 비로그인 사용자: ADMIN, USER 권한 포스트 모두 차단
+      query.andWhere('post.readPermission NOT IN (:...blockedPermissions)', {
+        blockedPermissions: [RolesEnum.USER],
+      });
+    }
     query.orderBy('post.id', 'DESC');
 
     // pagination 적용
@@ -125,10 +134,13 @@ export class PostsService {
   // 5. 특정 포스트 생성
   async createPost(
     createPostDto: CreatePostDto,
-    currentUser: CurrentUserDto | null,
+    user: CurrentUserDto | null,
   ): Promise<CreatePostResponseDto> {
-    console.log(currentUser, 'currentUser');
-    const authorId = currentUser.userId;
+    if (!user) {
+      throw new UnauthorizedException('Login is required.');
+    }
+
+    const authorId = user.userId;
     const {
       title,
       content,
@@ -143,8 +155,17 @@ export class PostsService {
       where: { id: authorId },
     });
 
-    if (!existingAuthor) {
-      throw new NotFoundException(`User with ID ${authorId} not found`);
+    if (!user || !existingAuthor) {
+      throw new NotFoundException(
+        `User with ID ${authorId ?? 'none'} not found`,
+      );
+    }
+
+    // User인데 Admin Only 옵션으로 글 쓰려고 할 때.
+    if (user.role === RolesEnum.USER && readPermission === RolesEnum.ADMIN) {
+      throw new ForbiddenException(
+        `Normal Users cannot create posts with Admin-only permission.`,
+      );
     }
 
     const existingCategory = await this.categoryRepo.findOne({
@@ -203,24 +224,18 @@ export class PostsService {
     id: number,
     currentUser: CurrentUserDto | null,
   ): Promise<PostDetailResponseDto> {
-    console.log(currentUser, '👯 currentUser');
-    console.log('🫡 1');
     const post = await this.postRepo.findOne({
       where: { id },
       relations: ['category', 'comments', 'tags', 'category.group', 'author'],
       order: { id: 'DESC' },
     });
-    console.log('🫡 2');
 
     if (!post) {
-      console.log('🫡 3');
       throw new NotFoundException('Post were not found');
     }
-    console.log('🫡 4');
+
     const userRole = currentUser?.role || null;
     if (!canReadPost(post.readPermission, userRole)) {
-      console.log('🫡 5');
-
       throw new ForbiddenException(
         'You do not have permission to view this post.',
       );
@@ -256,7 +271,7 @@ export class PostsService {
   async updatePost(
     id: number,
     dto: UpdatePostDto,
-    currentUser: CurrentUserDto | null,
+    currentUser: CurrentUserDto,
   ): Promise<UpdatePostResponseDto> {
     const {
       title,
@@ -278,7 +293,7 @@ export class PostsService {
       throw new NotFoundException();
     }
 
-    const userRole = currentUser?.role || null;
+    const userRole = currentUser.role;
     if (!canCreateOrUpdatePost(existingPost.readPermission, userRole)) {
       throw new ForbiddenException(
         'You do not have permission to update this post.',
@@ -353,13 +368,20 @@ export class PostsService {
   }
 
   // 8. 특정 포스트 삭제
-  async deletePost(id: number) {
+  async deletePost(id: number, user: CurrentUserDto) {
     const existingPost = await this.postRepo.findOne({
       where: { id },
     });
 
     if (!existingPost) {
       throw new NotFoundException(`Post with ID ${id} does not exist`);
+    }
+
+    const userRole = user?.role;
+    if (!canCreateOrUpdatePost(existingPost.readPermission, userRole)) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this post.',
+      );
     }
 
     await this.postRepo.remove(existingPost);

@@ -74,11 +74,14 @@ export class PostsController {
     example: 'number[]',
     type: 'number[]',
   })
+  @UseGuards(OptionalJwtAuthGuard)
   async findAllPosts(
+    user: CurrentUserDto,
     @Query('groupId') groupId?: string,
     @Query('categoryId') categoryId?: string,
     @Query('tagIds') tagIds?: string[],
     @Query('pageSize', new DefaultValuePipe(12), ParseIntPipe)
+    @CurrentUser()
     pageSize?: number,
     @Query('pageIndex', new DefaultValuePipe(1), ParseIntPipe)
     pageIndex?: number,
@@ -113,7 +116,7 @@ export class PostsController {
         tagIds: parsedTagIds,
         type: type,
       },
-      // role,
+      user ?? null,
     );
   }
 
@@ -134,11 +137,11 @@ export class PostsController {
   }
 
   @Get(':id')
-  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
     summary: '게시글 상세 조회',
     description: '특정 게시글을 상세 조회합니다.',
   })
+  @UseGuards(OptionalJwtAuthGuard)
   async findPostDetail(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user?: CurrentUserDto,
@@ -162,6 +165,7 @@ export class PostsController {
     summary: '인접 포스트 조회',
     description: '특정 게시물의 인접 포스트를 조회합니다.',
   })
+  @UseGuards(OptionalJwtAuthGuard)
   async findAdjacentPosts(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user?: CurrentUserDto,
@@ -182,9 +186,9 @@ export class PostsController {
   async updatePost(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePostDto: UpdatePostDto,
-    @CurrentUser() user?: CurrentUserDto,
+    @CurrentUser() user: CurrentUserDto,
   ) {
-    return await this.postsService.updatePost(id, updatePostDto, user || null);
+    return await this.postsService.updatePost(id, updatePostDto, user);
   }
 
   @UseGuards(JwtAuthGuard, IsOwnerGuard)
@@ -195,8 +199,11 @@ export class PostsController {
     summary: '게시글 삭제',
     description: '특정 게시글을 삭제합니다.',
   })
-  async removeOnePost(@Param('id', ParseIntPipe) id: number) {
-    return await this.postsService.deletePost(id);
+  async removeOnePost(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return await this.postsService.deletePost(id, user);
   }
 
   @Post(':id/likes')

@@ -4,11 +4,12 @@ export function canCreateOrUpdatePost(
   postReadPermission: RolesEnum,
   userRole?: RolesEnum,
 ): boolean {
+  // 로그인 안 했다면 생성이나 수정 불가.
   if (!userRole) {
-    // 로그인 안 했다면 생성이나 수정 불가.
     return false;
   }
 
+  // 전체공개글이면
   if (postReadPermission === null) {
     return true;
   }
