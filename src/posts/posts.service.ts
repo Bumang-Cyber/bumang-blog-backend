@@ -93,6 +93,10 @@ export class PostsService {
     // pagination 적용
     query.skip((page - 1) * size).take(size);
 
+    console.log('categoryId 파라미터:', categoryId);
+    console.log('실제 SQL:', query.getSql());
+    console.log('바인딩 파라미터:', query.getParameters());
+
     // get [data, totalCount]
     const [posts, totalCount] = await query.getManyAndCount();
 
