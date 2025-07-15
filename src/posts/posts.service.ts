@@ -594,4 +594,15 @@ export class PostsService {
 
     return { id: postId, view: result.raw[0].view };
   }
+
+  // post.service.ts
+  async deletePostsByUserId(userId: number): Promise<number> {
+    const result = await this.postRepo
+      .createQueryBuilder()
+      .delete()
+      .where('authorId > :userId', { userId })
+      .execute();
+
+    return result.affected ?? 0;
+  }
 }
