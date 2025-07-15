@@ -76,9 +76,7 @@ export class PostsService {
     } else if (Array.isArray(tagIds) && tagIds.length !== 0) {
       // 기존: query.where('tag.id = :tagIds', { tagIds });
       query.where('tag.id IN (:...tagIds)', { tagIds });
-    }
-
-    if (type === 'dev' || type === 'life') {
+    } else if (type === 'dev' || type === 'life') {
       query.where('post.type = :type', { type });
     }
 
@@ -160,9 +158,7 @@ export class PostsService {
     } else if (Array.isArray(tagIds) && tagIds.length !== 0) {
       // 기존: query.where('tag.id = :tagIds', { tagIds });
       query.where('tag.id IN (:...tagIds)', { tagIds });
-    }
-
-    if (type === 'dev' || type === 'life') {
+    } else if (type === 'dev' || type === 'life') {
       query.where('post.type = :type', { type });
     }
 
