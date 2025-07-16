@@ -80,9 +80,9 @@ export class PostsService {
       query.where('post.type = :type', { type });
     }
 
-    // 비로그인 사용자: USER 권한 포스트를 리스트에서 볼 수 없게.
+    // 공통적으로 readPermission 조건 추가
     query.andWhere(
-      'post.readPermission != :blocked OR post.readPermission IS NULL',
+      '(post.readPermission != :blocked OR post.readPermission IS NULL)',
       {
         blocked: RolesEnum.USER,
       },
