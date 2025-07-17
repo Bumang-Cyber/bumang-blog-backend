@@ -10,7 +10,9 @@ export class TasksService {
   constructor(private readonly postService: PostsService) {}
 
   // 매일 자정에 실행
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+    timeZone: 'Asia/seoul',
+  })
   async handleDeletePosts() {
     const deletedCount = await this.postService.deletePostsByUserId(1);
     this.logger.log(`🧹 Deleted ${deletedCount} posts from 'users'`);
