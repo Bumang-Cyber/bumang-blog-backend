@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
@@ -102,7 +103,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`User with this Email does not exist`); // 404 에러를 던져줌
+      throw new UnauthorizedException(`User with this Email does not exist`); // 404 에러를 던져줌
     }
 
     return user;
@@ -118,7 +119,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`User with this Email does not exist`); // 404 에러를 던져줌
+      throw new UnauthorizedException(`User with this Email does not exist`); // 404 에러를 던져줌
     }
 
     // 연결된 관계가 혹여 없다고 해도 에러가 나지 않고 0이 나옴.
