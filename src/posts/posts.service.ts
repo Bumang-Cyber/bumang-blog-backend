@@ -88,24 +88,27 @@ export class PostsService {
 
     const postDtos = posts.map(PostListItemResponseDto.fromEntity);
 
-    // 이미 join된 데이터에서 title 추출
     let subject = '';
-    if (posts.length > 0) {
-      const firstPost = posts[0];
-      if (groupId) {
-        subject = firstPost.category?.group?.label || '';
-      } else if (categoryId) {
-        subject = firstPost.category?.label || '';
-      } else if (tagIds) {
-        // 첫 번째 매칭된 태그의 title 또는 모든 태그 title 조합
-        subject = firstPost.tags
-          ?.filter((tag) => tagIds.includes(tag.id))
-          .map((tag) => tag.title)
-          .join(', ');
-        // .find((tag) => tagIds.includes(tag.id))?.title || '';
-      } else if (type) {
-        subject = type;
-      }
+
+    if (groupId) {
+      const targetGroup = await this.groupRepo.findOne({
+        where: { id: groupId },
+      });
+      subject = targetGroup.label;
+    } else if (categoryId) {
+      const targetCategory = await this.categoryRepo.findOne({
+        where: { id: categoryId },
+      });
+      subject = targetCategory.label;
+    } else if (tagIds) {
+      const targetTags = await this.tagRepo.find({
+        where: { id: In(tagIds) },
+      });
+      subject = targetTags.map((tag) => tag.title).join(', ');
+    }
+
+    if (type) {
+      subject = type;
     }
 
     return new PaginatedResponseDto(
@@ -115,37 +118,6 @@ export class PostsService {
       postDtos,
       subject,
     );
-  }
-
-  private async findSubject(
-    type: 'groupId' | 'categoryId' | 'tagIds' | 'type',
-    value: number | number[],
-  ) {
-    // 주제 찾기
-    let subject = '';
-
-    if (type === 'groupId' && typeof value === 'number') {
-      const targetGroup = await this.groupRepo.findOne({
-        where: { id: value },
-      });
-      subject = targetGroup.label;
-    } else if (type === 'categoryId' && typeof value === 'number') {
-      const targetCategory = await this.categoryRepo.findOne({
-        where: { id: value },
-      });
-      subject = targetCategory.label;
-    } else if (type === 'tagIds' && typeof value !== 'number') {
-      const targetTags = await this.tagRepo.find({
-        where: { id: In(value) },
-      });
-      subject = targetTags.map((tag) => tag.title).join(', ');
-    }
-
-    if (type) {
-      subject = value;
-    }
-
-    return subject;
   }
 
   async findPostsAuthenticated(
