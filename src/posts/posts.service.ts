@@ -69,19 +69,13 @@ export class PostsService {
       .leftJoinAndSelect('post.author', 'user')
       .leftJoinAndSelect('post.tags', 'tag');
 
-    let subject = '';
     if (groupId) {
       query.where('group.id = :groupId', { groupId });
-      subject = await this.findSubject('groupId', groupId);
     } else if (categoryId) {
       query.where('category.id = :categoryId', { categoryId });
-      subject = await this.findSubject('categoryId', groupId);
     } else if (Array.isArray(tagIds) && tagIds.length !== 0) {
-      // 기존: query.where('tag.id = :tagIds', { tagIds });
       query.where('tag.id IN (:...tagIds)', { tagIds });
-      subject = await this.findSubject('tagIds', groupId);
     } else if (type === 'dev' || type === 'life') {
-      subject = await this.findSubject('type', groupId);
       query.where('post.type = :type', { type });
     }
 
@@ -93,6 +87,26 @@ export class PostsService {
     const [posts, totalCount] = await query.getManyAndCount();
 
     const postDtos = posts.map(PostListItemResponseDto.fromEntity);
+
+    // 이미 join된 데이터에서 title 추출
+    let subject = '';
+    if (posts.length > 0) {
+      const firstPost = posts[0];
+      if (groupId) {
+        subject = firstPost.category?.group?.label || '';
+      } else if (categoryId) {
+        subject = firstPost.category?.label || '';
+      } else if (tagIds) {
+        // 첫 번째 매칭된 태그의 title 또는 모든 태그 title 조합
+        subject = firstPost.tags
+          ?.filter((tag) => tagIds.includes(tag.id))
+          .map((tag) => tag.title)
+          .join(', ');
+        // .find((tag) => tagIds.includes(tag.id))?.title || '';
+      } else if (type) {
+        subject = type;
+      }
+    }
 
     return new PaginatedResponseDto(
       totalCount, //
@@ -128,7 +142,7 @@ export class PostsService {
     }
 
     if (type) {
-      subject = type;
+      subject = value;
     }
 
     return subject;
