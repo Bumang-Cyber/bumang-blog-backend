@@ -4,7 +4,8 @@ function getCookieOptions(isProduction: boolean = false) {
   return {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? ('none' as const) : ('lax' as const),
+    // sameSite: isProduction ? ('none' as const) : ('lax' as const), // 0801
+    sameSite: 'lax' as const,
     path: '/',
   };
 }
