@@ -59,7 +59,6 @@ export class PostsService {
       tagIds?: number[];
       type?: string;
     },
-    user: CurrentUserDto | null,
   ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const { groupId, categoryId, tagIds, type } = filter;
 
@@ -70,22 +69,20 @@ export class PostsService {
       .leftJoinAndSelect('post.author', 'user')
       .leftJoinAndSelect('post.tags', 'tag');
 
+    let subject = '';
     if (groupId) {
       query.where('group.id = :groupId', { groupId });
+      subject = await this.findSubject('groupId', groupId);
     } else if (categoryId) {
       query.where('category.id = :categoryId', { categoryId });
+      subject = await this.findSubject('categoryId', groupId);
     } else if (Array.isArray(tagIds) && tagIds.length !== 0) {
       // 기존: query.where('tag.id = :tagIds', { tagIds });
       query.where('tag.id IN (:...tagIds)', { tagIds });
+      subject = await this.findSubject('tagIds', groupId);
     } else if (type === 'dev' || type === 'life') {
+      subject = await this.findSubject('type', groupId);
       query.where('post.type = :type', { type });
-    }
-
-    // 공통적으로 readPermission 조건 추가
-    if (!user) {
-      query.andWhere('post.readPermission != :blocked', {
-        blocked: RolesEnum.USER,
-      });
     }
 
     query.orderBy('post.id', 'DESC');
@@ -93,36 +90,9 @@ export class PostsService {
     // pagination 적용
     query.skip((page - 1) * size).take(size);
 
-    // console.log('categoryId 파라미터:', categoryId);
-    // console.log('실제 SQL:', query.getSql());
-    // console.log('바인딩 파라미터:', query.getParameters());
-
     const [posts, totalCount] = await query.getManyAndCount();
 
     const postDtos = posts.map(PostListItemResponseDto.fromEntity);
-
-    let subject = '';
-
-    if (groupId) {
-      const targetGroup = await this.groupRepo.findOne({
-        where: { id: groupId },
-      });
-      subject = targetGroup.label;
-    } else if (categoryId) {
-      const targetCategory = await this.categoryRepo.findOne({
-        where: { id: categoryId },
-      });
-      subject = targetCategory.label;
-    } else if (tagIds) {
-      const targetTags = await this.tagRepo.find({
-        where: { id: In(tagIds) },
-      });
-      subject = targetTags.map((tag) => tag.title).join(', ');
-    }
-
-    if (type) {
-      subject = type;
-    }
 
     return new PaginatedResponseDto(
       totalCount, //
@@ -131,6 +101,37 @@ export class PostsService {
       postDtos,
       subject,
     );
+  }
+
+  private async findSubject(
+    type: 'groupId' | 'categoryId' | 'tagIds' | 'type',
+    value: number | number[],
+  ) {
+    // 주제 찾기
+    let subject = '';
+
+    if (type === 'groupId' && typeof value === 'number') {
+      const targetGroup = await this.groupRepo.findOne({
+        where: { id: value },
+      });
+      subject = targetGroup.label;
+    } else if (type === 'categoryId' && typeof value === 'number') {
+      const targetCategory = await this.categoryRepo.findOne({
+        where: { id: value },
+      });
+      subject = targetCategory.label;
+    } else if (type === 'tagIds' && typeof value !== 'number') {
+      const targetTags = await this.tagRepo.find({
+        where: { id: In(value) },
+      });
+      subject = targetTags.map((tag) => tag.title).join(', ');
+    }
+
+    if (type) {
+      subject = type;
+    }
+
+    return subject;
   }
 
   async findPostsAuthenticated(

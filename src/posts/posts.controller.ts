@@ -52,7 +52,6 @@ export class PostsController {
   }
 
   @Get()
-  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
     summary: '모든 게시글 조회',
     description: 'DB에 있는 모든 게시글 목록을 반환합니다.',
@@ -77,7 +76,6 @@ export class PostsController {
     type: 'number[]',
   })
   async findAllPostsPublic(
-    @CurrentUser() user?: CurrentUserDto,
     @Query('groupId') groupId?: string,
     @Query('categoryId') categoryId?: string,
     @Query('tagIds') tagIds?: string[],
@@ -116,7 +114,6 @@ export class PostsController {
         tagIds: parsedTagIds,
         type: type,
       },
-      user || null,
     );
   }
 
