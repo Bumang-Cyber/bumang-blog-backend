@@ -59,6 +59,7 @@ export class PostsService {
       tagIds?: number[];
       type?: string;
     },
+    user: CurrentUserDto | null,
   ): Promise<PaginatedResponseDto<PostListItemResponseDto>> {
     const { groupId, categoryId, tagIds, type } = filter;
 
@@ -81,23 +82,21 @@ export class PostsService {
     }
 
     // 공통적으로 readPermission 조건 추가
-    query.andWhere(
-      '(post.readPermission != :blocked OR post.readPermission IS NULL)',
-      {
+    if (!user) {
+      query.andWhere('post.readPermission != :blocked', {
         blocked: RolesEnum.USER,
-      },
-    );
+      });
+    }
 
     query.orderBy('post.id', 'DESC');
 
     // pagination 적용
     query.skip((page - 1) * size).take(size);
 
-    console.log('categoryId 파라미터:', categoryId);
-    console.log('실제 SQL:', query.getSql());
-    console.log('바인딩 파라미터:', query.getParameters());
+    // console.log('categoryId 파라미터:', categoryId);
+    // console.log('실제 SQL:', query.getSql());
+    // console.log('바인딩 파라미터:', query.getParameters());
 
-    // get [data, totalCount]
     const [posts, totalCount] = await query.getManyAndCount();
 
     const postDtos = posts.map(PostListItemResponseDto.fromEntity);

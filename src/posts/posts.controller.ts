@@ -29,6 +29,7 @@ import {
   ApiExcludeEndpoint,
   ApiOperation,
   ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { PostListItemResponseDto } from './dto/post-list-item-response.dto';
@@ -51,6 +52,7 @@ export class PostsController {
   }
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
     summary: '모든 게시글 조회',
     description: 'DB에 있는 모든 게시글 목록을 반환합니다.',
@@ -75,6 +77,7 @@ export class PostsController {
     type: 'number[]',
   })
   async findAllPostsPublic(
+    @CurrentUser() user?: CurrentUserDto,
     @Query('groupId') groupId?: string,
     @Query('categoryId') categoryId?: string,
     @Query('tagIds') tagIds?: string[],
@@ -113,6 +116,7 @@ export class PostsController {
         tagIds: parsedTagIds,
         type: type,
       },
+      user || null,
     );
   }
 
@@ -121,28 +125,13 @@ export class PostsController {
     summary: '모든 게시글 조회',
     description: 'DB에 있는 모든 게시글 목록을 반환합니다.',
   })
-  @ApiQuery({
-    name: 'groupId',
-    required: false,
-    description: '그룹 아이디로 조회 시',
-    type: 'number',
-  })
-  @ApiQuery({
-    name: 'categoryId',
-    required: false,
-    description: '최대 개수',
-    type: 'number',
-  })
-  @ApiQuery({
-    name: 'tagIds',
-    required: false,
-    description: '태그 아이디로 조회 (중첩 가능)',
-    example: 'number[]',
-    type: 'number[]',
+  @ApiResponse({
+    description: '최근 결제가 만료된 유저 목록',
+    type: PaginatedResponseDto<PostListItemResponseDto>,
   })
   @UseGuards(OptionalJwtAuthGuard)
   async findAllPostsAuthenticated(
-    @CurrentUser() user: CurrentUserDto,
+    @CurrentUser() user?: CurrentUserDto,
     @Query('groupId') groupId?: string,
     @Query('categoryId') categoryId?: string,
     @Query('tagIds') tagIds?: string[],
@@ -181,7 +170,7 @@ export class PostsController {
         tagIds: parsedTagIds,
         type: type,
       },
-      user,
+      user || null,
     );
   }
 
@@ -198,7 +187,7 @@ export class PostsController {
     @Body() createPostDto: CreatePostDto,
     @CurrentUser() user?: CurrentUserDto,
   ): Promise<CreatePostResponseDto> {
-    return await this.postsService.createPost(createPostDto, user);
+    return await this.postsService.createPost(createPostDto, user || null);
   }
 
   @Get(':id')
@@ -238,7 +227,7 @@ export class PostsController {
     previous: PostListItemResponseDto;
     next: PostListItemResponseDto;
   }> {
-    return await this.postsService.findAdjacentPosts(id, user);
+    return await this.postsService.findAdjacentPosts(id, user || null);
   }
 
   @UseGuards(JwtAuthGuard, IsOwnerGuard)
@@ -251,9 +240,9 @@ export class PostsController {
   async updatePost(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePostDto: UpdatePostDto,
-    @CurrentUser() user: CurrentUserDto,
+    @CurrentUser() user?: CurrentUserDto,
   ) {
-    return await this.postsService.updatePost(id, updatePostDto, user);
+    return await this.postsService.updatePost(id, updatePostDto, user || null);
   }
 
   @UseGuards(JwtAuthGuard, IsOwnerGuard)
@@ -266,9 +255,9 @@ export class PostsController {
   })
   async removeOnePost(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: CurrentUserDto,
+    @CurrentUser() user?: CurrentUserDto,
   ) {
-    return await this.postsService.deletePost(id, user);
+    return await this.postsService.deletePost(id, user || null);
   }
 
   @Post(':id/likes')
