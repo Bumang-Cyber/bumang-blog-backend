@@ -6,6 +6,8 @@ const isDev = process.env.NODE_ENV !== 'production';
 // 로그 디렉토리 생성
 import * as fs from 'fs';
 const logDir = 'logs';
+
+// logDir가 없으면 생성
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
 }
