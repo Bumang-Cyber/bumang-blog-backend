@@ -3,18 +3,31 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import {
+  WINSTON_MODULE_NEST_PROVIDER,
+  WINSTON_MODULE_PROVIDER,
+} from 'nest-winston';
+import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.use(cookieParser());
 
-  // ✅ 여기가 핵심
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // DTO에 없는 값은 제거
       forbidNonWhitelisted: true, // DTO에 없는 값 들어오면 에러
       transform: true, // 타입 자동 변환 (ex: string → number)
     }),
+  );
+
+  // Winston 로거를 기본 로거로 설정
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+
+  // 로깅 인터셉터 적용
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(app.get(WINSTON_MODULE_PROVIDER)),
   );
 
   app.use((req, res, next) => {
@@ -24,7 +37,7 @@ async function bootstrap() {
     next();
   });
 
-  // ✅ Swagger 설정
+  // Swagger 설정
   const config = new DocumentBuilder()
     .setTitle('BUMANG BLOG API')
     .setDescription('버망 블로그 백엔드 API 문서입니다.')
