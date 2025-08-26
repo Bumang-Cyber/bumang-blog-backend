@@ -22,18 +22,17 @@ async function bootstrap() {
     }),
   );
 
-  // Winston 로거를 기본 로거로 설정
-  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  // // Winston 로거를 기본 로거로 설정
+  // app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
-  // 로깅 인터셉터 적용
-  app.useGlobalInterceptors(
-    new LoggingInterceptor(app.get(WINSTON_MODULE_PROVIDER)),
-  );
+  // // 로깅 인터셉터 적용
+  // app.useGlobalInterceptors(
+  //   new LoggingInterceptor(app.get(WINSTON_MODULE_PROVIDER)),
+  // );
 
   app.use((req, res, next) => {
-    console.log('🔥 요청 수신됨:', req.method, req.url);
-    console.log('🔥 req.cookies: ', req.cookies);
-    // console.log('🔥 req.headers.cookie: ', req.headers.cookie);
+    console.log('요청 수신됨:', req.method, req.url);
+    console.log('req.cookies: ', req.cookies);
     next();
   });
 
