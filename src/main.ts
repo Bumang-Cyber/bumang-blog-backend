@@ -23,12 +23,12 @@ async function bootstrap() {
   );
 
   // // Winston 로거를 기본 로거로 설정
-  // app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   // // 로깅 인터셉터 적용
-  // app.useGlobalInterceptors(
-  //   new LoggingInterceptor(app.get(WINSTON_MODULE_PROVIDER)),
-  // );
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(app.get(WINSTON_MODULE_PROVIDER)),
+  );
 
   app.use((req, res, next) => {
     console.log('요청 수신됨:', req.method, req.url);

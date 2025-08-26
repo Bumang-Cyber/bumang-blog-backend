@@ -42,7 +42,7 @@ import { AppLoggerService } from './logger/app-logger.service';
     S3Module,
     TasksModule,
   ],
-  controllers: [AppController, AppLoggerService],
+  controllers: [AppController],
   providers: [AppService, AppLoggerService],
 })
 export class AppModule {}
