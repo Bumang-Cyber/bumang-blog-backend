@@ -9,12 +9,14 @@ import { SignupAuthDto } from './dto/signup-auth.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RolesEnum } from 'src/users/const/roles.const';
+import { AppLoggerService } from 'src/logger/app-logger.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly appLoggerService: AppLoggerService,
   ) {}
 
   async signup(dto: SignupAuthDto) {
@@ -49,12 +51,24 @@ export class AuthService {
 
     const user = await this.usersService.validateOneUserPasswordByEmail(email);
     if (!user) {
+      this.appLoggerService.logAuth(
+        'login_user_not_found',
+        undefined,
+        email,
+        false,
+      );
       throw new UnauthorizedException('Invalid Email or Password');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
+      this.appLoggerService.logAuth(
+        'login_password_mismatch',
+        user.id,
+        email,
+        false,
+      );
       throw new UnauthorizedException('Invalid Email or Password');
     }
 
@@ -72,6 +86,8 @@ export class AuthService {
 
     // Refresh Token DB에 저장
     await this.usersService.saveRefreshToken(user.id, refreshToken);
+
+    this.appLoggerService.logAuth('login_success', user.id, email, true);
 
     return { accessToken, refreshToken, user };
   }

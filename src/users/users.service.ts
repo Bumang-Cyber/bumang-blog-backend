@@ -15,6 +15,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDetailResponseDto } from './dto/user-detail-response.dto';
 import * as bcrypt from 'bcrypt';
+import { AppLoggerService } from 'src/logger/app-logger.service';
 
 @Injectable()
 export class UsersService {
@@ -27,6 +28,8 @@ export class UsersService {
 
     @InjectRepository(CommentEntity)
     private readonly commentRepo: Repository<CommentEntity>,
+
+    private readonly appLoggerService: AppLoggerService,
   ) {}
 
   // 전체 유저 조회
@@ -164,9 +167,21 @@ export class UsersService {
     ]);
 
     if (existingEmail) {
+      this.appLoggerService.logUser(
+        'user_not_created_existing_email',
+        undefined,
+        email,
+        false,
+      );
       throw new ConflictException('this email has already been used'); // 409 에러를 던져줌
     }
     if (existingNickname) {
+      this.appLoggerService.logUser(
+        'user_not_created_existing_nickname',
+        undefined,
+        email,
+        false,
+      );
       throw new ConflictException('this nickname has already been used');
     }
 
@@ -179,6 +194,7 @@ export class UsersService {
 
     // const user = this.userRepo.create(dto);
     const saved = await this.userRepo.save(user);
+    this.appLoggerService.logUser('user_created', user.id, email, true);
     return UserDetailResponseDto.fromEntity(saved, 0, 0);
   }
 
@@ -191,6 +207,12 @@ export class UsersService {
     if (dto.email) {
       const existingEmail = await this.userRepo.findOne({ where: { email } });
       if (existingEmail && existingEmail.id !== id) {
+        this.appLoggerService.logUser(
+          'user_not_updated_attempt_to_change_existing_email',
+          existingEmail.id,
+          email,
+          false,
+        );
         throw new ConflictException('this email has already been used'); // 409 에러를 던져줌
       }
     }
@@ -200,6 +222,12 @@ export class UsersService {
         where: { nickname },
       });
       if (existingNickname && existingNickname.id !== id) {
+        this.appLoggerService.logUser(
+          'user_not_updated_attempt_to_change_existing_nickname',
+          existingNickname.id,
+          email,
+          false,
+        );
         throw new ConflictException('this nickname has already been used');
       }
     }
@@ -207,14 +235,34 @@ export class UsersService {
     const result = await this.userRepo.update(id, dto);
 
     if (result.affected === 0) {
+      this.appLoggerService.logUser(
+        'user_not_found_for_update',
+        undefined,
+        dto.email,
+        false,
+      );
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
     const updated = await this.userRepo.findOne({ where: { id } });
+    // {
+    //   affected?: number;     // 영향받은 행 수 (수정된 행의 개수)
+    //   generatedMaps: any[];  // 생성된 값들
+    //   raw: any;             // 원시 결과
+    // }
 
     if (!updated) {
+      this.appLoggerService.logUser(
+        'user_not_found_after_update',
+        id,
+        dto.email,
+        false,
+      );
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+
+    // 성공
+    this.appLoggerService.logUser('user_updated', id, dto.email, true);
 
     // 연결된 관계가 혹여 없다고 해도 에러가 나지 않고 0이 나옴.
     const [postsCount, commentsCount] = await Promise.all([
@@ -234,10 +282,18 @@ export class UsersService {
     const user = await this.userRepo.findOne({ where: { id } });
 
     if (!user) {
+      this.appLoggerService.logUser(
+        'user_not_found_for_removal',
+        id, // ← id라도 남기기
+        undefined,
+        false,
+      );
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
+    const tempEmail = user.email;
     await this.userRepo.remove(user); // 따로 응답을 내려주지 않음 (204)
+    this.appLoggerService.logUser('user_removed', id, tempEmail, true);
   }
 
   // 리프레시 토큰 저장
