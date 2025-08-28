@@ -19,12 +19,19 @@ export class AppLoggerService {
   // this.logger.silly('모든 메시지', { data });    // 6 - 가장 낮음
 
   // 비즈니스 로직 로깅만 남기기
-  logPost(action: string, postId?: number, userId?: number, title?: string) {
+  logPost(
+    action: string,
+    postId?: number,
+    userId?: number,
+    title?: string,
+    metadata?: any,
+  ) {
     this.logger.info(`Post ${action}`, {
       action,
       postId,
       userId,
       title,
+      metadata,
       category: 'blog_post',
     });
   }
@@ -34,6 +41,7 @@ export class AppLoggerService {
     userId?: number,
     email?: string,
     success: boolean = true,
+    metadata?: any,
   ) {
     const level = success ? 'info' : 'warn';
     this.logger[level](`Auth ${action}`, {
@@ -41,6 +49,7 @@ export class AppLoggerService {
       userId,
       email,
       success,
+      metadata,
       category: 'auth',
     });
   }
@@ -50,6 +59,7 @@ export class AppLoggerService {
     userId?: number,
     email?: string,
     success: boolean = true,
+    metadata?: any,
   ) {
     const level = success ? 'info' : 'warn';
     this.logger[level](`User ${action}`, {
@@ -57,6 +67,7 @@ export class AppLoggerService {
       userId,
       email,
       success,
+      metadata,
       category: 'user',
     });
   }

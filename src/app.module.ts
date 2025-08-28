@@ -17,7 +17,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './logger/winston.config';
-import { AppLoggerService } from './logger/app-logger.service';
 
 @Module({
   imports: [
@@ -43,6 +42,6 @@ import { AppLoggerService } from './logger/app-logger.service';
     TasksModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AppLoggerService],
+  providers: [AppService],
 })
 export class AppModule {}

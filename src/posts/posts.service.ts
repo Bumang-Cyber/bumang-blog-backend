@@ -26,6 +26,7 @@ import { getPermissionCondition } from './util/getPermissionCondition';
 import { PostTypeEnum } from './const/type.const';
 import { GroupEntity } from 'src/categories/entities/group.entity';
 import { RolesEnum } from 'src/users/const/roles.const';
+import { AppLoggerService } from 'src/logger/app-logger.service';
 
 @Injectable()
 export class PostsService {
@@ -44,6 +45,8 @@ export class PostsService {
 
     @InjectRepository(CategoryEntity)
     private readonly categoryRepo: Repository<CategoryEntity>,
+
+    private readonly appLoggerService: AppLoggerService,
   ) {}
 
   // 1. 포스트 모두 조회
@@ -225,6 +228,11 @@ export class PostsService {
 
     // 사용자 권한이 User인데 Admin Only 나 Public 옵션으로 글 쓰려고 할 때.
     if (user.role === RolesEnum.USER && readPermission !== RolesEnum.USER) {
+      this.appLoggerService.logPost(
+        'post_creation_permission_denied',
+        undefined,
+        user.userId,
+      );
       throw new ForbiddenException(
         `Normal Users cannot create posts with Admin-only permission.`,
       );
@@ -298,10 +306,23 @@ export class PostsService {
 
     const userRole = currentUser?.role || null;
     if (!canReadPost(post.readPermission, userRole)) {
+      this.appLoggerService.logPost(
+        'post_access_denied',
+        id,
+        currentUser?.userId,
+      );
+
       throw new ForbiddenException(
         'You do not have permission to view this post.',
       );
     }
+
+    this.appLoggerService.logPost(
+      'post_read',
+      id,
+      currentUser?.userId,
+      post.title,
+    );
 
     return PostDetailResponseDto.fromEntity(post);
   }
@@ -320,7 +341,12 @@ export class PostsService {
 
     const userRole = currentUser?.role || null;
     if (!canReadPost(post.readPermission, userRole)) {
-      //
+      this.appLoggerService.logPost(
+        'post_access_denied',
+        id,
+        currentUser?.userId,
+      );
+
       throw new ForbiddenException(
         'You do not have permission to view this post.',
       );
@@ -352,11 +378,23 @@ export class PostsService {
     });
 
     if (!existingPost) {
+      this.appLoggerService.logPost(
+        'post_not_found_for_update',
+        id,
+        currentUser.userId,
+      );
+
       throw new NotFoundException();
     }
 
     const userRole = currentUser.role;
     if (!canCreateOrUpdatePost(existingPost.readPermission, userRole)) {
+      this.appLoggerService.logPost(
+        'post_update_permission_denied',
+        id,
+        currentUser.userId,
+      );
+
       throw new ForbiddenException(
         'You do not have permission to update this post.',
       );
