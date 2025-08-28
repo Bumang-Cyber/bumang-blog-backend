@@ -17,21 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         // ✅ httpOnly 쿠키 지원
         (req: RequestWithCookies) => {
           const token = req?.cookies?.['accessToken'];
-          console.log('🥎 Extracted accessToken:', token);
-
-          // 토큰 디코딩 (검증 없이)
-          if (token) {
-            try {
-              const decoded = jwt.decode(token);
-              console.log('📋 Decoded token (without verify):', decoded);
-
-              // 토큰 검증
-              const verified = jwt.verify(token, process.env.JWT_SECRET);
-              console.log('✅ Token verified manually:', verified);
-            } catch (error) {
-              console.error('❌ Token verification error:', error.message);
-            }
-          }
 
           return token;
         },
@@ -43,11 +28,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    console.log('❣️ validated value', {
-      userId: payload.sub,
-      email: payload.email,
-      role: payload.role,
-    });
     return { userId: payload.sub, email: payload.email, role: payload.role };
   }
 }

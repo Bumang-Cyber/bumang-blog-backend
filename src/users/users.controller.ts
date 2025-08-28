@@ -56,7 +56,6 @@ export class UsersController {
     description: '로그인한 유저 자신의 정보를 조회합니다.',
   })
   async findMyProfile(@CurrentUser() user?: CurrentUserDto) {
-    console.log(user, 'user in me');
     const userInfo = await this.usersService.findOneUserById(user.userId);
 
     return plainToInstance(UserEntity, userInfo);
