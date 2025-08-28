@@ -10,11 +10,13 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly metricsService: MetricsService,
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -30,10 +32,15 @@ export class LoggingInterceptor implements NestInterceptor {
       tap(() => {
         const duration = Date.now() - startTime;
         const statusCode = response.statusCode;
+        const durationSeconds = duration / 1000;
 
         this.logger.info(
           `[RESPONSE] ${method} ${url} - ${statusCode} - ${duration}ms`,
         );
+
+        // Prometheus 메트릭
+        this.metricsService.incrementHttpRequests(method, url, statusCode);
+        this.metricsService.observeHttpDuration(method, url, durationSeconds);
       }),
     );
   }

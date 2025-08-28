@@ -17,6 +17,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './logger/winston.config';
+import { MetricsModule } from './metrics/metrics.module';
+import { AppLoggerModule } from './logger/app-logger.module';
+import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
 @Module({
   imports: [
@@ -40,8 +43,10 @@ import { winstonConfig } from './logger/winston.config';
     TagsModule,
     S3Module,
     TasksModule,
+    AppLoggerModule,
+    MetricsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, LoggingInterceptor],
 })
 export class AppModule {}
