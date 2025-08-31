@@ -43,8 +43,6 @@ jobs:
 
             docker pull ${{ secrets.DOCKER_USERNAME }}/bumang-blog-backend:latest
 
-            mkdir -p nginx certbot/conf certbot/www
-
             docker-compose -f docker-compose.prod.yaml --env-file .env.production up -d app
 
             echo "⏳ 앱이 올라올 때까지 대기..."

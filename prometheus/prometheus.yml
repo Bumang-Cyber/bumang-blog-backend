@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 60s
+  evaluation_interval: 60s
+
+# Alertmanager 설정 (옵션)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# 규칙 파일 로드
+rule_files:
+  # - "first_rules.yml"
+
+# 스크레이프 대상 설정
+scrape_configs:
+  # Prometheus 자체 모니터링
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter - 서버 메트릭
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # PostgreSQL 메트릭
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Nest.js 애플리케이션 메트릭
+  - job_name: 'nestjs-app'
+    static_configs:
+      - targets: ['app:3000'] # Nest.js 앱 주소
+    metrics_path: '/metrics' # 메트릭 엔드포인트
