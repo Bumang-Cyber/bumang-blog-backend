@@ -13,6 +13,12 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Backup files
+*.backup
+*.save
+*.swp
+*~
+
 # OS
 .DS_Store
 
