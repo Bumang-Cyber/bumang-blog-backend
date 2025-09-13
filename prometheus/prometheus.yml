@@ -1,7 +1,7 @@
 #./prometheus/prometheus.yml
 global:
-  scrape_interval: 60s
-  evaluation_interval: 60s
+  scrape_interval: 300s
+  evaluation_interval: 300s
 
 # Alertmanager 설정 (옵션)
 alerting:
