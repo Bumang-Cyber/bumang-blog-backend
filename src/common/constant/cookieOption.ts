@@ -6,6 +6,7 @@ function getCookieOptions(isProduction: boolean = false) {
     secure: isProduction,
     // sameSite: isProduction ? ('none' as const) : ('lax' as const), // 0801
     sameSite: 'lax' as const,
+    domain: isProduction ? 'bumang.xyz' : undefined, // 서브도메인 공유
     path: '/',
   };
 }
